@@ -84,7 +84,7 @@ try {
     user.ResetPasswordExpires = Date.now() + 15*60*100; //15 min
     await user.save();
      // Create the reset password link
-     const resetUrl = `http://yourfrontend.com/reset-password?token=${resetToken}`;
+     const resetUrl = `https://3000-idx-ecommerce-1738991988282.cluster-qpa6grkipzc64wfjrbr3hsdma2.cloudworkstations.dev/api/reset-password?token=${resetToken}`;
      // Send the reset password link to the user's email
      const message = `You are receiving this email because you (or someone else) requested a password reset. Please click the following link to reset your password: ${resetUrl}`;
      await sendEmail({
