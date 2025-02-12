@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken";
 import User from "../model/user.model.js"
 import { generateResetToken } from "../utils/utilityFun.js";
 import { sendEmail } from "../utils/utilityFun.js";
+import { catchAsyncError } from "../utils/catchAsyncErrors.js";
+import { AppError } from "../utils/ApiError.js";
 // Register User
 export const registerUser = async (req, res) => {
     const { FirstName, LastName, Email, Password } = req.body;
@@ -79,12 +81,13 @@ try {
         return res.status(200).json({ message: "If the email exists, you will receive a reset link." });
     }
 
-    const resetToken = await generateResetToken();
+    const resetToken = await generateResetToken(user._id);
+    console.log('Generated Reset Token:', resetToken);
     user.ResetPasswordToken = resetToken;
-    user.ResetPasswordExpires = Date.now() + 15*60*100; //15 min
+    user.ResetPasswordExpires = Date.now() + 15*60*1000; //15 min
     await user.save();
      // Create the reset password link
-     const resetUrl = `https://3000-idx-ecommerce-1738991988282.cluster-qpa6grkipzc64wfjrbr3hsdma2.cloudworkstations.dev/api/reset-password?token=${resetToken}`;
+     const resetUrl = `http://localhost:3000/api/reset-password?token=${resetToken}`;
      // Send the reset password link to the user's email
      const message = `You are receiving this email because you (or someone else) requested a password reset. Please click the following link to reset your password: ${resetUrl}`;
      await sendEmail({
@@ -106,15 +109,15 @@ export const resetPassword = async (req, res, next) => {
 
     try {
         // Verify the token
+        console.log(process.env.JWT_SECRET)
+console.log('Received Token:', token);
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
+               console.log(decoded.id,"decoded")
         // Find the user by the decoded user ID
         const user = await User.findOne({
-            _id: decoded.id,
-            ResetPasswordToken: token,
-            ResetPasswordExpires: { $gt: Date.now() }, // Ensure the token hasn't expired
+            _id: decoded.id, 
         });
-
+         console.log("user foune ",user)
         if (!user) {
             return res.status(400).json({ message: "Invalid or expired token" });
         }
@@ -140,3 +143,13 @@ export const resetPassword = async (req, res, next) => {
         next(error);
     }
 };
+
+
+//here roles will the array 
+export const allowedTo = (...roles) => {
+    return catchAsyncError(async (req, res, next) => {
+        if (!roles.includes(req.user.role)) {
+            return next(new AppError('you are not authorized to access this route', 401));
+        }
+    })
+}

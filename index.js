@@ -5,7 +5,7 @@ import express from 'express';
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import errorHandler from "./middlewares/errorMiddleware.js";
- 
+import userRouter from "./routes/user.rotues.js";
 const app = express();
 
 app.use(express.json());
@@ -16,7 +16,9 @@ app.use(cors({
 
 //routes
 
-app.use("/api",authRoutes);
+app.use("/api", authRoutes);
+app.use("/", userRouter);
+
 
 
 
