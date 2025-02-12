@@ -6,6 +6,7 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import errorHandler from "./middlewares/errorMiddleware.js";
 import userRouter from "./routes/user.rotues.js";
+import cartRouter from "./routes/cartRoutes.js"
 const app = express();
 
 app.use(express.json());
@@ -18,6 +19,8 @@ app.use(cors({
 
 app.use("/api", authRoutes);
 app.use("/", userRouter);
+app.use("/cart", cartRouter);
+
 
 
 
@@ -31,7 +34,6 @@ app.get('/', (req, res) => {
 
 
 app.use(errorHandler);
-
 const port = parseInt(process.env.PORT) || 3000;
 
 
