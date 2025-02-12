@@ -7,76 +7,61 @@ const productSchema = new Schema(
             required: true,
             unique: true,
             trim: true,
-            minLength: [3, "Too Short product Name"],
+            minLength: [3, "Title must be at least 3 characters long"],
         },
-        images: {
-            type: [String],
-        },
-        descripton: {
+        slug: {
             type: String,
-            maxlength: [100, "Description should be less than or equal to 100"],
-            minlength: [10, "Description should be more than or equal to 10"],
+            required: true,
+            unique: true,
+            lowercase: true,
+            trim: true,
+        },
+        description: {
+            type: String,
             required: true,
             trim: true,
+            minLength: [10, "Description must be at least 10 characters long"],
+            maxLength: [500, "Description cannot exceed 500 characters"],
         },
         price: {
             type: Number,
-            default: 0,
-            min: 0,
             required: true,
-        },
-        priceAfterDiscount: {
-            type: Number,
-            default: 0,
-            min: 0,
+            min: [0, "Price cannot be negative"],
         },
         quantity: {
             type: Number,
+            required: true,
             default: 0,
-            min: 0,
-        },
-        sold: {
-            type: Number,
-            default: 0,
-            min: 0,
+            min: [0, "Quantity cannot be negative"],
         },
         category: {
-            type: String,
-            required: true,
-            trim:true
-        },
-        subcategory: {
-            type: String,
-        },
-        brand: {
             type: Schema.ObjectId,
-            ref: "brand",
+            ref: "Category",
             required: true,
         },
-        ratingAvg: {
-            type: Number,
-            min: 1,
-            max: 5,
+        images: {
+            type: [String],
+            required: true,
         },
-        ratingCount: {
-            type: Number,
-            min: 0,
+        video: {
+            type: String, // Optional video URL or path
         },
     },
     { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
- 
-
-productSchema.virtual('reviews', {
-    ref: 'review',
-    localField: '_id',
-    foreignField: 'productId',
+// Virtual field for reviews (optional)
+productSchema.virtual("reviews", {
+    ref: "Review",
+    localField: "_id",
+    foreignField: "productId",
 });
 
-productSchema.pre(['find', 'findOne'], function () {
-    this.populate('reviews')
-})
+// Middleware to populate reviews only if needed
+productSchema.pre(["find", "findOne"], function () {
+    if (this._userProvidedFields && this._userProvidedFields.reviews) {
+        this.populate("reviews");
+    }
+});
 
-export const productModel = model("product", productSchema);
-
+export const ProductModel = model("Product", productSchema);

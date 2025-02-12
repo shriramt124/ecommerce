@@ -2,31 +2,29 @@ import { Schema, model } from "mongoose";
 
 const reviewSchema = new Schema(
     {
-        text: {
-            type: String,
-            trim: true,
-            required: true,
-        },
         productId: {
             type: Schema.ObjectId,
-            ref: "product",
-            required: true,
+            ref: "Product",
+            required: true, // Every review must belong to a product
         },
         userId: {
             type: Schema.ObjectId,
-            ref: "user",
-            required: true,
+            ref: "User",
+            required: true, // Every review must belong to a user
         },
-        rate: {
+        rating: {
             type: Number,
-            default: 1,
+            required: true,
+            min: [1, "Rating must be at least 1"],
+            max: [5, "Rating cannot exceed 5"],
+        },
+        comment: {
+            type: String,
+            trim: true,
+            maxLength: [500, "Comment cannot exceed 500 characters"],
         },
     },
     { timestamps: true }
 );
 
-reviewSchema.pre(['find', 'findOne'], function () {
-    this.populate('userId', 'name -_id')
-})
-
-export const reviewModel = model("review", reviewSchema);
+export const ReviewModel = model("Review", reviewSchema);
