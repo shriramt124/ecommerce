@@ -46,6 +46,17 @@ const productSchema = new Schema(
         video: {
             type: String, // Optional video URL or path
         },
+        averageRating: {
+            type: Number,
+            default: 0,
+            min: [0, "Average rating cannot be negative"],
+            max: [5, "Average rating cannot exceed 5"]
+        },
+        totalReviews: {
+            type: Number,
+            default: 0,
+            min: [0, "Total reviews cannot be negative"]
+        },
     },
     { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
