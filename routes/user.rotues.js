@@ -1,11 +1,19 @@
  
 import express from "express"
-import { addUser, getAllUsers, updateUser } from "../controller/user.controller.js";
+import { getAllUsers, updateUser, deleteUser, blockUser, unblockUser } from "../controller/user.controller.js";
+import { protect, isAdmin } from "../middlewares/authMiddleware.js";
+import { uploadSingleImage, handleMulterError } from "../middlewares/uploadMiddleware.js";
 const userRouter = express.Router()
-
  
-userRouter.post("/user", addUser);
-userRouter.get("/user/", getAllUsers);
-userRouter.put("/user/:id", updateUser);
+ 
+ 
+// Admin routes
+userRouter.get("/", protect, isAdmin, getAllUsers);
+userRouter.delete("/:id", protect, isAdmin, deleteUser);
+userRouter.put("/block-user/:id", protect, isAdmin, blockUser);
+userRouter.put("/unblock-user/:id", protect, isAdmin, unblockUser);
+
+// User routes
+userRouter.put("/update", protect, uploadSingleImage, handleMulterError, updateUser);
 
 export default userRouter;

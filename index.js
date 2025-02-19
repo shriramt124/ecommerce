@@ -6,7 +6,8 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import errorHandler from "./middlewares/errorMiddleware.js";
 import userRouter from "./routes/user.rotues.js";
-import cartRouter from "./routes/cartRoutes.js"
+import cartRouter from "./routes/cartRoutes.js";
+import orderRouter from "./routes/orderRoutes.js";
 const app = express();
 
 app.use(express.json());
@@ -18,8 +19,9 @@ app.use(cors({
 //routes
 
 app.use("/api", authRoutes);
-app.use("/", userRouter);
+app.use("/user", userRouter);
 app.use("/cart", cartRouter);
+app.use("/orders", orderRouter);
 
 
 

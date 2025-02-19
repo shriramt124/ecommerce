@@ -12,6 +12,11 @@ export const addToCart = catchAsyncError(async (req, res, next) => {
         return next(new AppError('Product not found', 404));
     }
 
+    // Add stock validation
+    if (product.quantity < quantity) {
+        return next(new AppError(`Only ${product.quantity} items available in stock`, 400));
+    }
+
     let cart = await cartModel.findOne({ userId });
     if (!cart) {
         const cartItem = {
@@ -131,4 +136,17 @@ export const deleteFromCart = catchAsyncError(async (req, res, next) => {
 
     await cart.save();
     res.status(200).json({ message: 'Product deleted from cart', cart });
+});
+export const getCart = catchAsyncError(async (req, res, next) => {
+    const userId = req.user._id;
+
+    const cart = await cartModel.findOne({ userId }).populate('cartItem.productId');
+    if (!cart) {
+        return next(new AppError('Cart not found', 404));
+    }
+
+    res.status(200).json({
+        success: true,
+        cart
+    });
 });

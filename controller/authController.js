@@ -6,43 +6,37 @@ import { sendEmail } from "../utils/utilityFun.js";
 import { catchAsyncError } from "../utils/catchAsyncErrors.js";
 import { AppError } from "../utils/ApiError.js";
 // Register User
-export const registerUser = async (req, res) => {
+export const registerUser = catchAsyncError(async (req, res, next) => {
     const { FirstName, LastName, Email, Password } = req.body;
 
-    try {
-        // Check if user exists
-        const userExists = await User.findOne({ Email });
-        if (userExists) {
-            return res.status(400).json({ message: "User already exists" });
-        }
+    // Check if user exists
+    const userExists = await User.findOne({ Email });
+    if (userExists) {
+        return next(new AppError("User already exists", 400));
+    }
 
-        // Hash password
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(Password, salt);
+    try {
+        // Handle profile image upload if present
+        if (req.file) {
+            const uploadedImage = await uploadToCloudinary(req.file);
+            req.body.profileImage = uploadedImage;
+            
+            // Cleanup temporary file
+            await fs.unlink(req.file.path);
+        }
 
         // Create user
-        const user = await User.create({
-            FirstName,
-            LastName,
-            Email,
-            Password: hashedPassword,
-        });
+        const user = await User.create(req.body);
 
-        if (user) {
-            res.status(201).json({
-                _id: user._id,
-                FirstName: user.FirstName,
-                LastName: user.LastName,
-                Email: user.Email,
-                token: generateToken(user._id),
-            });
-        } else {
-            res.status(400).json({ message: "Invalid user data" });
-        }
+        res.status(201).json({
+            success: true,
+            user,
+            token: generateToken(user._id)
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-};
+});
 
 // Login User
 export const loginUser = async (req, res) => {
@@ -150,6 +144,8 @@ export const allowedTo = (...roles) => {
     return catchAsyncError(async (req, res, next) => {
         if (!roles.includes(req.user.role)) {
             return next(new AppError('you are not authorized to access this route', 401));
+        } else {
+            next();
         }
     })
 }

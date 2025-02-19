@@ -64,4 +64,5 @@ productSchema.pre(["find", "findOne"], function () {
     }
 });
 
-export const ProductModel = model("Product", productSchema);
+const ProductModel = model("Product", productSchema);
+export default ProductModel;

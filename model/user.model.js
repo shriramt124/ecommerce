@@ -3,6 +3,10 @@ import validator from "validator"
 import bcrypt from "bcryptjs"
 
 const userSchema = new mongoose.Schema({
+    profileImage: {
+        type: String,
+        default: ""
+    },
     FirstName:{
         type:String,
         required:true,
@@ -33,6 +37,28 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         default:"user"
+    },
+    cart: {
+        type: Array,
+        default:[]
+    },
+    isBlocked: {
+        type: Boolean,
+        default: false
+        
+    },
+    address: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Address',
+    }],
+    whishlist:[{type:mongoose.Schema.Types.ObjectId,ref:"Product"}],
+    phoneNumber: {
+        type: String,
+        trim: true
+    },
+    bio: {
+        type: String,
+        maxLength: [250, "Bio cannot exceed 250 characters"]
     }
     
 },{
@@ -40,13 +66,13 @@ const userSchema = new mongoose.Schema({
 })
 
 userSchema.pre("save", function () {
-    this.password =   bcrypt.hashSync(this.password, 10);
+    this.Password =   bcrypt.hashSync(this.Password, 10);
 
 });
 
 userSchema.pre("findOneAndUpdate", function () {
-    if (this._update.password) {
-        this._update.password = bcrypt.hashSync(this._update.password, 8);
+    if (this._update.Password) {
+        this._update.Password = bcrypt.hashSync(this._update.Password, 8);
     }
 
 });

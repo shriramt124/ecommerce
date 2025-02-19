@@ -1,25 +1,8 @@
 import User from "../model/user.model.js";
 import { AppError } from "../utils/ApiError.js";
 import { catchAsyncError } from "../utils/catchAsyncErrors.js";
-
-
-export const addUser = catchAsyncError(async (req, res, next) => {
-    const { FirstName, LastName, Email, Password, role } = req.body;
-    if (!FirstName || !LastName || !Email || !Password || !role) {
-        return next(new AppError("All Fields are required", 401));//bad request 
-    }
-    const user = await User.create({
-        FirstName,
-        LastName,
-        Email,
-        Password,
-        role
-    })
-    await user.save();
-    res.stauts(201).json({
-        message: "User created successfully"
-    })
-})
+import { uploadToCloudinary } from "../config/cloudinary.js";
+import fs from 'fs/promises';
 
 
 export const getAllUsers = catchAsyncError(async (req, res, next) => {
@@ -33,15 +16,72 @@ export const getAllUsers = catchAsyncError(async (req, res, next) => {
 })
 
 export const updateUser = catchAsyncError(async (req, res, next) => {
-    console.log("running")
+    const { _id } = req.user;
+    
+    try {
+        // Handle profile image upload if present
+        if (req.file) {
+            const uploadedImage = await uploadToCloudinary(req.file);
+            req.body.profileImage = uploadedImage;
+            
+            // Cleanup temporary file
+            await fs.unlink(req.file.path);
+        }
+
+        const updateUser = await User.findByIdAndUpdate(_id, req.body, {
+            new: true,
+            runValidators: true
+        });
+
+        if (!updateUser) {
+            return next(new AppError("User was not found", 404));
+        }
+
+        res.status(200).json({
+            message: "User updated successfully",
+            user: updateUser
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+})
+
+export const deleteUser = catchAsyncError(async (req, res, next) => {
     const { id } = req.params;
-    const updateUser = await User.findByIdAndUpdate(id, req.body, {
-       new:true
-    })
-    updateUser && res.status(201).json({ message: "User updated successfully" });
-    !updateUser && next(new AppError("User was not found", 404));
+    const deleteUser = await User.findByIdAndDelete(id);
+    deleteUser && res.status(204).json({ message: "User deleted successfully" });
+    !deleteUser && next(new AppError("User was not found", 404));
 
 })
 
 
+export const blockUser = catchAsyncError(async (req, res, next) => {
+    const { id } = req.params;
+    const block = await User.findByIdAndUpdate(id, {
+        isBlocked: true
+    }, { new: true });
+    
+    if (!block) {
+        return next(new AppError("User was not found", 404));
+    }
+    
+    res.status(200).json({ message: "User blocked successfully", block });
+})
 
+
+
+export const unblockUser = catchAsyncError(async (req, res, next) => {
+    const { id } = req.params;
+    const unblock = await User.findByIdAndUpdate(id, {
+        isBlocked: false
+    }, { new: true });
+
+    if (!unblock) {
+        return next(new AppError("User was not found", 404));
+    }
+
+    res.status(200).json({
+        message: "User unblocked successfully",
+        unblock
+    });
+})
