@@ -59,6 +59,14 @@ const userSchema = new mongoose.Schema({
     bio: {
         type: String,
         maxLength: [250, "Bio cannot exceed 250 characters"]
+    },
+    refreshToken: {
+        type: String,
+        default: null
+    },
+    refreshTokenExpires: {
+        type: Date,
+        default: null
     }
     
 },{

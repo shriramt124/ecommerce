@@ -5,6 +5,16 @@ import { generateResetToken } from "../utils/utilityFun.js";
 import { sendEmail } from "../utils/utilityFun.js";
 import { catchAsyncError } from "../utils/catchAsyncErrors.js";
 import { AppError } from "../utils/ApiError.js";
+// Generate access token
+const generateAccessToken = (id) => {
+    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "15m" });
+};
+
+// Generate refresh token
+const generateRefreshToken = (id) => {
+    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+};
+
 // Register User
 export const registerUser = catchAsyncError(async (req, res, next) => {
     const { FirstName, LastName, Email, Password } = req.body;
@@ -27,11 +37,25 @@ export const registerUser = catchAsyncError(async (req, res, next) => {
 
         // Create user
         const user = await User.create(req.body);
+        const accessToken = generateAccessToken(user._id);
+        const refreshToken = generateRefreshToken(user._id);
+
+        // Save refresh token to user
+        user.refreshToken = refreshToken;
+        user.refreshTokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+        await user.save();
+
+        // Set refresh token in HTTP-only cookie
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
 
         res.status(201).json({
             success: true,
             user,
-            token: generateToken(user._id)
+            accessToken
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -39,34 +63,107 @@ export const registerUser = catchAsyncError(async (req, res, next) => {
 });
 
 // Login User
-export const loginUser = async (req, res) => {
+export const loginUser = catchAsyncError(async (req, res, next) => {
     const { Email, Password } = req.body;
 
-    try {
-        const user = await User.findOne({ Email });
+    const user = await User.findOne({ Email });
 
-        if (user && (await bcrypt.compare(Password, user.Password))) {
-            res.json({
-                _id: user._id,
-                FirstName: user.FirstName,
-                LastName: user.LastName,
-                Email: user.Email,
-                token: generateToken(user._id),
-            });
-        } else {
-            res.status(401).json({ message: "Invalid credentials" });
-        }
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    if (user && (await bcrypt.compare(Password, user.Password))) {
+        const accessToken = generateAccessToken(user._id);
+        const refreshToken = generateRefreshToken(user._id);
+
+        // Save refresh token to user
+        user.refreshToken = refreshToken;
+        user.refreshTokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+        await user.save();
+
+        // Set refresh token in HTTP-only cookie
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
+        res.json({
+            _id: user._id,
+            FirstName: user.FirstName,
+            LastName: user.LastName,
+            Email: user.Email,
+            accessToken
+        });
+    } else {
+        return next(new AppError("Invalid credentials", 401));
     }
-};
+});
 
- 
-const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
-};
+// Refresh Token
+export const refreshToken = catchAsyncError(async (req, res, next) => {
+    const refreshToken = req.cookies.refreshToken;
 
+    if (!refreshToken) {
+        return next(new AppError("No refresh token provided", 401));
+    }
 
+    try {
+        // Verify refresh token
+        const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id);
+
+        if (!user || user.refreshToken !== refreshToken || user.refreshTokenExpires < new Date()) {
+            return next(new AppError("Invalid refresh token", 401));
+        }
+
+        // Generate new tokens
+        const accessToken = generateAccessToken(user._id);
+        const newRefreshToken = generateRefreshToken(user._id);
+
+        // Update refresh token in database
+        user.refreshToken = newRefreshToken;
+        user.refreshTokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+        await user.save();
+
+        // Set new refresh token in cookie
+        res.cookie('refreshToken', newRefreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
+        res.json({
+            success: true,
+            accessToken
+        });
+    } catch (error) {
+        return next(new AppError("Invalid refresh token", 401));
+    }
+});
+
+// Logout User
+export const logoutUser = catchAsyncError(async (req, res, next) => {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (refreshToken) {
+        // Find user and clear refresh token
+        const user = await User.findOne({ refreshToken });
+        if (user) {
+            user.refreshToken = null;
+            user.refreshTokenExpires = null;
+            await user.save();
+        }
+    }
+
+    // Clear refresh token cookie
+    res.cookie('refreshToken', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        expires: new Date(0)
+    });
+
+    res.json({
+        success: true,
+        message: "Logged out successfully"
+    });
+});
 export const forgotPassword = async(req,res,next)=>{
     const {Email} = req.body;
 try {
