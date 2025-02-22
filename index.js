@@ -10,6 +10,7 @@ import cartRouter from "./routes/cartRoutes.js";
 import orderRouter from "./routes/orderRoutes.js";
 import reviewRouter from "./routes/reviewRoutes.js";
 import carouselRouter from "./routes/carouselRoutes.js";
+import productRouter from "./routes/productRoutes.js";
 const app = express();
 
 app.use(express.json());
@@ -26,8 +27,7 @@ app.use("/cart", cartRouter);
 app.use("/orders", orderRouter);
 app.use("/reviews", reviewRouter);
 app.use("/carousel", carouselRouter);
-
-
+app.use("/products", productRouter);
 
 app.get('/', (req, res) => {
   const name = process.env.NAME || 'World';

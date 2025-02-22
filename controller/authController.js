@@ -65,9 +65,13 @@ export const registerUser = catchAsyncError(async (req, res, next) => {
 // Login User
 export const loginUser = catchAsyncError(async (req, res, next) => {
     const { Email, Password } = req.body;
+    console.log(Email,Password)
 
     const user = await User.findOne({ Email });
-
+    const isPasswordMathched = await bcrypt.compare(Password, user.Password);
+    if (!isPasswordMathched) {
+        console.log("Password not matched")
+    }
     if (user && (await bcrypt.compare(Password, user.Password))) {
         const accessToken = generateAccessToken(user._id);
         const refreshToken = generateRefreshToken(user._id);

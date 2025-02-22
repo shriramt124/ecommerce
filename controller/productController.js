@@ -1,10 +1,10 @@
-import { ProductModel } from "../model/product.model.js";
+import ProductModel from "../model/product.model.js";
 import { catchAsyncError } from "../utils/catchAsyncErrors.js";
 import { AppError } from "../utils/ApiError.js";
 import slugify from "slugify";
 import fs from 'fs/promises';
  
-export const addProduct = catchAsyncError(async (req, res, next) => {
+export const createProduct = catchAsyncError(async (req, res, next) => {
     if (!req.files || !req.files.length) {
         return next(new AppError('Please upload at least one image', 400));
     }
@@ -28,7 +28,7 @@ export const addProduct = catchAsyncError(async (req, res, next) => {
     }
 });
 
-export const getAllProduct = catchAsyncError(async (req, res, next) => {
+export const getAllProducts = catchAsyncError(async (req, res, next) => {
     const products = await ProductModel.find().populate("category");
     res.status(200).json({ message: "success", products });
 });
