@@ -11,16 +11,18 @@ import orderRouter from "./routes/orderRoutes.js";
 import reviewRouter from "./routes/reviewRoutes.js";
 import carouselRouter from "./routes/carouselRoutes.js";
 import productRouter from "./routes/productRoutes.js";
+import categoryRouter from "./routes/categoryRoutes.js";
 const app = express();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true}))
 app.use(cors({
   origin:"*"
 }))
 
 
 //routes
-
+ 
 app.use("/api", authRoutes);
 app.use("/user", userRouter);
 app.use("/cart", cartRouter);
@@ -28,6 +30,8 @@ app.use("/orders", orderRouter);
 app.use("/reviews", reviewRouter);
 app.use("/carousel", carouselRouter);
 app.use("/products", productRouter);
+app.use("/category", categoryRouter);
+
 
 app.get('/', (req, res) => {
   const name = process.env.NAME || 'World';

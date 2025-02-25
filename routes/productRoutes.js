@@ -7,6 +7,7 @@ import {
   updateProduct,
   deleteProduct
 } from '../controller/productController.js';
+import { uploadMultipleImages, handleMulterError } from '../middlewares/uploadMiddleware.js';
 
 const router = express.Router();
 
@@ -17,7 +18,7 @@ router.get('/', getAllProducts);
 router.get('/:id', getProductById);
 
 // Protected routes
-router.post('/', protect, createProduct);
+router.post('/', protect, uploadMultipleImages, handleMulterError, createProduct);
 router.put('/:id', protect, updateProduct);
 router.delete('/:id', protect, deleteProduct);
 

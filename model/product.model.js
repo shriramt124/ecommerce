@@ -1,4 +1,5 @@
 import { Schema, model } from "mongoose";
+import mongoose from "mongoose";
 
 const productSchema = new Schema(
     {
@@ -35,7 +36,7 @@ const productSchema = new Schema(
             min: [0, "Quantity cannot be negative"],
         },
         category: {
-            type: Schema.ObjectId,
+            type:mongoose.Schema.Types.ObjectId,
             ref: "Category",
             required: true,
         },

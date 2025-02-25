@@ -3,18 +3,24 @@ import { catchAsyncError } from "../utils/catchAsyncErrors.js";
 import { AppError } from "../utils/ApiError.js";
 import slugify from "slugify";
 import fs from 'fs/promises';
+import { ADDRCONFIG } from "dns";
+import { uploadToCloudinary } from "../config/cloudinary.js";
  
 export const createProduct = catchAsyncError(async (req, res, next) => {
+  
     if (!req.files || !req.files.length) {
         return next(new AppError('Please upload at least one image', 400));
     }
+    
     try {
         const uploadPromises = req.files.map(file => uploadToCloudinary(file));
         const uploadedImages = await Promise.all(uploadPromises);
         req.body.images = uploadedImages;
         req.body.slug = slugify(req.body.title);
+      console.log(req.body)
+        const addProduct = new ProductModel({...req.body, category: req.body.category});
+        console.log(addProduct);
 
-        const addProduct = new ProductModel(req.body);
         await addProduct.save();
 
         // Cleanup temporary files
