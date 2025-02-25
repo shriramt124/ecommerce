@@ -94,7 +94,7 @@ export const loginUser = catchAsyncError(async (req, res, next) => {
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            maxAge: 15 * 60 * 1000 // 15 minutes
+            maxAge: 1 * 60 * 1000 // 15 minutes
         });
 
         res.json({
@@ -112,6 +112,7 @@ export const loginUser = catchAsyncError(async (req, res, next) => {
 // Refresh Token
 export const refreshToken = catchAsyncError(async (req, res, next) => {
     const refreshToken = req.cookies.refreshToken;
+    console.log("refreshToken is running")
 
     if (!refreshToken) {
         return next(new AppError("No refresh token provided", 401));
@@ -144,7 +145,7 @@ export const refreshToken = catchAsyncError(async (req, res, next) => {
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            maxAge: 15 * 60 * 1000 // 15 minutes
+            maxAge: 1 * 60 * 1000 // 15 minutes
         });
 
         res.json({
@@ -169,8 +170,14 @@ export const logoutUser = catchAsyncError(async (req, res, next) => {
         }
     }
 
-    // Clear refresh token cookie
+    // Clear both refresh token and access token cookies
     res.cookie('refreshToken', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        expires: new Date(0)
+    });
+    
+    res.cookie('accessToken', '', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         expires: new Date(0)
