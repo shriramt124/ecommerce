@@ -19,6 +19,10 @@ const Navbar = () => {
   };
 
   const handleUserClick = () => {
+    if (isAuthenticated) {
+      return;
+    }
+
     navigate('/login');
   };
 
@@ -62,8 +66,8 @@ const Navbar = () => {
                   onClick={toggleProfileMenu}
                   aria-label="Profile menu"
                 >
-                  <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
-                    <FiUser className="h-5 w-5" />
+                  <div className="h-8 w-8 cursor-pointer rounded-full bg-gray-200 flex items-center justify-center">
+                    <FiUser className="h-5 w-5 cursor-pointer" />
                   </div>
                   <FiChevronDown className="ml-1 h-4 w-4" />
                 </button>
@@ -93,8 +97,9 @@ const Navbar = () => {
             )}
             {isAuthenticated && (
               <button 
-                className="text-gray-600 hover:text-gray-900 transition-colors duration-200 relative"
+                className="text-gray-600 cursor-pointer hover:text-gray-900 transition-colors duration-200 relative"
                 aria-label="Shopping cart"
+                onClick={() => navigate('/cart')}
               >
                 <FiShoppingCart className="h-6 w-6" />
                 {cartCount > 0 && (

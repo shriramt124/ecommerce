@@ -1,8 +1,9 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FiMinus, FiPlus, FiTrash2 } from 'react-icons/fi';
 
 const Cart = () => {
+    const navigate = useNavigate();
     // Sample cart data - will be replaced with actual API data
     const cart = {
         items: [
@@ -125,7 +126,7 @@ const Cart = () => {
                                         <span>₹{cart.total.toFixed(2)}</span>
                                     </div>
                                 </div>
-                                <button className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-900 transition-colors mt-6">
+                                <button onClick={()=>navigate("/checkout")} className=" cursor-pointer w-full bg-black text-white py-3 rounded-lg hover:bg-gray-900 transition-colors mt-6">
                                     Proceed to Checkout
                                 </button>
                                 <Link
