@@ -30,7 +30,7 @@ export const registerUser = catchAsyncError(async (req, res, next) => {
         if (req.file) {
             const uploadedImage = await uploadToCloudinary(req.file);
             req.body.profileImage = uploadedImage;
-            
+
             // Cleanup temporary file
             await fs.unlink(req.file.path);
         }
@@ -45,17 +45,21 @@ export const registerUser = catchAsyncError(async (req, res, next) => {
         user.refreshTokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
         await user.save();
 
-        // Set refresh token in HTTP-only cookie
+        // Set both tokens in HTTP-only cookies
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
+        res.cookie('accessToken', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 15 * 60 * 1000 // 15 minutes
+        });
 
         res.status(201).json({
             success: true,
-            user,
-            accessToken
+            user
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -65,7 +69,7 @@ export const registerUser = catchAsyncError(async (req, res, next) => {
 // Login User
 export const loginUser = catchAsyncError(async (req, res, next) => {
     const { Email, Password } = req.body;
-    console.log(Email,Password)
+    console.log(Email, Password)
 
     const user = await User.findOne({ Email });
     const isPasswordMathched = await bcrypt.compare(Password, user.Password);
@@ -81,11 +85,16 @@ export const loginUser = catchAsyncError(async (req, res, next) => {
         user.refreshTokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
         await user.save();
 
-        // Set refresh token in HTTP-only cookie
+        // Set both tokens in HTTP-only cookies
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+        res.cookie('accessToken', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 15 * 60 * 1000 // 15 minutes
         });
 
         res.json({
@@ -93,7 +102,7 @@ export const loginUser = catchAsyncError(async (req, res, next) => {
             FirstName: user.FirstName,
             LastName: user.LastName,
             Email: user.Email,
-            accessToken
+            role: user.role ?? "user"
         });
     } else {
         return next(new AppError("Invalid credentials", 401));
@@ -126,16 +135,20 @@ export const refreshToken = catchAsyncError(async (req, res, next) => {
         user.refreshTokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
         await user.save();
 
-        // Set new refresh token in cookie
+        // Set both tokens in HTTP-only cookies
         res.cookie('refreshToken', newRefreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
+        res.cookie('accessToken', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 15 * 60 * 1000 // 15 minutes
+        });
 
         res.json({
-            success: true,
-            accessToken
+            success: true
         });
     } catch (error) {
         return next(new AppError("Invalid refresh token", 401));
@@ -168,51 +181,51 @@ export const logoutUser = catchAsyncError(async (req, res, next) => {
         message: "Logged out successfully"
     });
 });
-export const forgotPassword = async(req,res,next)=>{
-    const {Email} = req.body;
-try {
-    const user = await User.findOne({Email});
-    if(!user){
-        return res.status(200).json({ message: "If the email exists, you will receive a reset link." });
+export const forgotPassword = async (req, res, next) => {
+    const { Email } = req.body;
+    try {
+        const user = await User.findOne({ Email });
+        if (!user) {
+            return res.status(200).json({ message: "If the email exists, you will receive a reset link." });
+        }
+
+        const resetToken = await generateResetToken(user._id);
+        console.log('Generated Reset Token:', resetToken);
+        user.ResetPasswordToken = resetToken;
+        user.ResetPasswordExpires = Date.now() + 15 * 60 * 1000; //15 min
+        await user.save();
+        // Create the reset password link
+        const resetUrl = `http://localhost:3000/api/reset-password?token=${resetToken}`;
+        // Send the reset password link to the user's email
+        const message = `You are receiving this email because you (or someone else) requested a password reset. Please click the following link to reset your password: ${resetUrl}`;
+        await sendEmail({
+            to: user.Email,
+            subject: "Password Reset Request",
+            text: message,
+        });
+        res.status(200).json({ message: "If the email exists, you will receive a reset link." });
+
+    } catch (error) {
+        next(error);
     }
-
-    const resetToken = await generateResetToken(user._id);
-    console.log('Generated Reset Token:', resetToken);
-    user.ResetPasswordToken = resetToken;
-    user.ResetPasswordExpires = Date.now() + 15*60*1000; //15 min
-    await user.save();
-     // Create the reset password link
-     const resetUrl = `http://localhost:3000/api/reset-password?token=${resetToken}`;
-     // Send the reset password link to the user's email
-     const message = `You are receiving this email because you (or someone else) requested a password reset. Please click the following link to reset your password: ${resetUrl}`;
-     await sendEmail({
-         to: user.Email,
-         subject: "Password Reset Request",
-         text: message,
-     });
-     res.status(200).json({ message: "If the email exists, you will receive a reset link." });
-    
-} catch (error) {
-    next(error);
-}
 }
 
 
- 
+
 export const resetPassword = async (req, res, next) => {
     const { token, newPassword } = req.body;
 
     try {
         // Verify the token
         console.log(process.env.JWT_SECRET)
-console.log('Received Token:', token);
+        console.log('Received Token:', token);
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-               console.log(decoded.id,"decoded")
+        console.log(decoded.id, "decoded")
         // Find the user by the decoded user ID
         const user = await User.findOne({
-            _id: decoded.id, 
+            _id: decoded.id,
         });
-         console.log("user foune ",user)
+        console.log("user foune ", user)
         if (!user) {
             return res.status(400).json({ message: "Invalid or expired token" });
         }
@@ -250,3 +263,101 @@ export const allowedTo = (...roles) => {
         }
     })
 }
+
+// Check if user is logged in
+export const isLoggedIn = catchAsyncError(async (req, res, next) => {
+    const refreshToken = req.cookies?.refreshToken;
+    const accessToken = req.cookies?.accessToken;
+
+    // Check if either token exists
+    if (!refreshToken && !accessToken) {
+        return res.status(401).json({
+            success: false,
+            isLoggedIn: false,
+            message: "Not authorized, no tokens found"
+        });
+    }
+
+    try {
+        let userId;
+        let tokenType = '';
+
+        // Try to verify access token first
+        if (accessToken) {
+            try {
+                const decodedAccess = jwt.verify(accessToken, process.env.JWT_SECRET);
+                userId = decodedAccess.id;
+                tokenType = 'access';
+            } catch (accessError) {
+                // Access token invalid/expired, try refresh token
+                if (refreshToken) {
+                    const decodedRefresh = jwt.verify(refreshToken, process.env.JWT_SECRET);
+                    userId = decodedRefresh.id;
+                    tokenType = 'refresh';
+                }
+            }
+        } else if (refreshToken) {
+            // Only refresh token available
+            const decodedRefresh = jwt.verify(refreshToken, process.env.JWT_SECRET);
+            userId = decodedRefresh.id;
+            tokenType = 'refresh';
+        }
+
+        // Find user and check status
+        const user = await User.findById(userId).select('-Password');
+
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                isLoggedIn: false,
+                message: "User not found"
+            });
+        }
+
+        // Check if user is blocked
+        if (user.isBlocked) {
+            return res.status(403).json({
+                success: false,
+                isLoggedIn: false,
+                message: "Your account has been blocked"
+            });
+        }
+
+        // Verify refresh token validity if it was used
+        if (tokenType === 'refresh' &&
+            (user.refreshToken !== refreshToken ||
+                user.refreshTokenExpires < new Date())) {
+            return res.status(401).json({
+                success: false,
+                isLoggedIn: false,
+                message: "Invalid or expired refresh token"
+            });
+        }
+
+        // Generate new access token if using refresh token or access token is expired
+        if (tokenType === 'refresh' || !accessToken) {
+            const newAccessToken = generateAccessToken(user._id);
+            res.cookie('accessToken', newAccessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: 15 * 60 * 1000 // 15 minutes
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            isLoggedIn: true,
+            user: user
+        });
+    } catch (error) {
+        // Clear invalid tokens
+        res.cookie('accessToken', '', { expires: new Date(0) });
+        res.cookie('refreshToken', '', { expires: new Date(0) });
+
+        return res.status(401).json({
+            success: false,
+            isLoggedIn: false,
+            message: "Authentication failed"
+        });
+    }
+});

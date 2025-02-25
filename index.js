@@ -2,6 +2,7 @@ import dotenv from "dotenv"
 dotenv.config();
 import cors from "cors"
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import errorHandler from "./middlewares/errorMiddleware.js";
@@ -15,14 +16,20 @@ import categoryRouter from "./routes/categoryRoutes.js";
 const app = express();
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true}))
+app.use(express.urlencoded({ extended: true }))
+app.use(cookieParser());
 app.use(cors({
-  origin:"*"
+  origin: "http://localhost:5173",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"],
+  exposedHeaders: ["Authorization", "Set-Cookie"],
+  preflightContinue: true
 }))
 
 
 //routes
- 
+
 app.use("/api", authRoutes);
 app.use("/user", userRouter);
 app.use("/cart", cartRouter);
@@ -43,7 +50,7 @@ app.use(errorHandler);
 const port = parseInt(process.env.PORT) || 3000;
 
 
-app.listen(port,async () => {
-   await connectDB();
+app.listen(port, async () => {
+  await connectDB();
   console.log(`listening on port ${port}`);
 });
