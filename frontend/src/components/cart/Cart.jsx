@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiMinus, FiPlus, FiTrash2 } from 'react-icons/fi';
+import { getCart, updateCartItem, removeFromCart } from '../../services/cartService';
+import { toast } from 'react-toastify';
 
 const Cart = () => {
     const navigate = useNavigate();
-    // Sample cart data - will be replaced with actual API data
-    const cart = {
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [cart, setCart] = useState({
         items: [
             {
                 id: 1,
@@ -26,23 +29,135 @@ const Cart = () => {
         shipping: 100.00,
         tax: 181.00,
         total: 2090.00,
+    });
+
+    // Fetch cart data from API
+    useEffect(() => {
+        fetchCart();
+    }, []);
+
+    const fetchCart = async () => {
+        try {
+            setLoading(true);
+            const response = await getCart();
+            if (response.success && response.cart) {
+                // Transform the cart data to match our component structure
+                const transformedCart = {
+                    items: response.cart.cartItem.map(item => ({
+                        id: item.productId._id,
+                        name: item.productId.name,
+                        price: item.price,
+                        quantity: item.quantity,
+                        image: item.productId.images[0]?.url || 'https://via.placeholder.com/150',
+                    })),
+                    subtotal: response.cart.totalPrice,
+                    shipping: 100.00, // This could be dynamic based on backend logic
+                    tax: response.cart.totalPrice * 0.1, // Assuming 10% tax
+                    total: response.cart.totalPriceAfterDiscount || response.cart.totalPrice + 100.00 + (response.cart.totalPrice * 0.1),
+                };
+                setCart(transformedCart);
+            } else {
+                // If no cart exists yet, set empty cart
+                setCart({
+                    items: [],
+                    subtotal: 0,
+                    shipping: 0,
+                    tax: 0,
+                    total: 0,
+                });
+            }
+        } catch (err) {
+            setError(err.message || 'Failed to fetch cart');
+            toast.error(err.message || 'Failed to fetch cart');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleQuantityChange = (itemId, change) => {
-        // This will be implemented with actual cart update logic
-        console.log('Update quantity for item:', itemId, 'change:', change);
+    const handleQuantityChange = async (itemId, change) => {
+        try {
+            const item = cart.items.find(item => item.id === itemId);
+            if (!item) return;
+            
+            const newQuantity = item.quantity + change;
+            if (newQuantity < 1) return;
+            
+            // Optimistically update UI
+            const updatedItems = cart.items.map(item =>
+                item.id === itemId ? { ...item, quantity: newQuantity } : item
+            );
+            
+            const updatedSubtotal = updatedItems.reduce(
+                (total, item) => total + item.price * item.quantity, 0
+            );
+            
+            const updatedTax = updatedSubtotal * 0.1; // Assuming 10% tax
+            
+            setCart({
+                ...cart,
+                items: updatedItems,
+                subtotal: updatedSubtotal,
+                tax: updatedTax,
+                total: updatedSubtotal + cart.shipping + updatedTax
+            });
+            
+            // Call API to update cart
+            await updateCartItem(itemId, newQuantity);
+        } catch (err) {
+            toast.error(err.message || 'Failed to update item quantity');
+            // Revert to original state on error
+            fetchCart();
+        }
     };
 
-    const handleRemoveItem = (itemId) => {
-        // This will be implemented with actual remove item logic
-        console.log('Remove item:', itemId);
+    const handleRemoveItem = async (itemId) => {
+        try {
+            // Optimistically update UI
+            const updatedItems = cart.items.filter(item => item.id !== itemId);
+            
+            const updatedSubtotal = updatedItems.reduce(
+                (total, item) => total + item.price * item.quantity, 0
+            );
+            
+            const updatedTax = updatedSubtotal * 0.1; // Assuming 10% tax
+            
+            setCart({
+                ...cart,
+                items: updatedItems,
+                subtotal: updatedSubtotal,
+                tax: updatedTax,
+                total: updatedSubtotal + cart.shipping + updatedTax
+            });
+            
+            // Call API to remove item
+            await removeFromCart(itemId);
+            toast.success('Item removed from cart');
+        } catch (err) {
+            toast.error(err.message || 'Failed to remove item');
+            // Revert to original state on error
+            fetchCart();
+        }
     };
 
     return (
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-[100px] mb-16">
             <h1 className="text-3xl font-serif mb-8">Shopping Cart</h1>
-
-            {cart.items.length === 0 ? (
+            
+            {loading ? (
+                <div className="text-center py-16">
+                    <p className="text-gray-600">Loading your cart...</p>
+                </div>
+            ) : error ? (
+                <div className="text-center py-16">
+                    <p className="text-red-500 mb-4">{error}</p>
+                    <button
+                        onClick={fetchCart}
+                        className="inline-block bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-900 transition-colors"
+                    >
+                        Try Again
+                    </button>
+                </div>
+            ) : cart.items.length === 0 ? (
                 <div className="text-center py-16">
                     <h2 className="text-2xl font-medium text-gray-900 mb-4">Your cart is empty</h2>
                     <p className="text-gray-600 mb-8">Looks like you haven't added anything to your cart yet.</p>
@@ -126,7 +241,7 @@ const Cart = () => {
                                         <span>₹{cart.total.toFixed(2)}</span>
                                     </div>
                                 </div>
-                                <button onClick={()=>navigate("/checkout")} className=" cursor-pointer w-full bg-black text-white py-3 rounded-lg hover:bg-gray-900 transition-colors mt-6">
+                                <button onClick={() => navigate("/checkout")} className=" cursor-pointer w-full bg-black text-white py-3 rounded-lg hover:bg-gray-900 transition-colors mt-6">
                                     Proceed to Checkout
                                 </button>
                                 <Link

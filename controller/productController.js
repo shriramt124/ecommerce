@@ -3,22 +3,22 @@ import { catchAsyncError } from "../utils/catchAsyncErrors.js";
 import { AppError } from "../utils/ApiError.js";
 import slugify from "slugify";
 import fs from 'fs/promises';
-import { ADDRCONFIG } from "dns";
+import mongoose from "mongoose";
 import { uploadToCloudinary } from "../config/cloudinary.js";
- 
+
 export const createProduct = catchAsyncError(async (req, res, next) => {
-  
+
     if (!req.files || !req.files.length) {
         return next(new AppError('Please upload at least one image', 400));
     }
-    
+
     try {
         const uploadPromises = req.files.map(file => uploadToCloudinary(file));
         const uploadedImages = await Promise.all(uploadPromises);
         req.body.images = uploadedImages;
         req.body.slug = slugify(req.body.title);
-      console.log(req.body)
-        const addProduct = new ProductModel({...req.body, category: req.body.category});
+        console.log(req.body)
+        const addProduct = new ProductModel({ ...req.body, category: req.body.category });
         console.log(addProduct);
 
         await addProduct.save();
@@ -29,14 +29,60 @@ export const createProduct = catchAsyncError(async (req, res, next) => {
         res.status(201).json({ message: "success", addProduct });
     } catch (error) {
         // Cleanup temporary files in case of error
-        await Promise.all(req.files.map(file => fs.unlink(file.path).catch(() => {})));
+        await Promise.all(req.files.map(file => fs.unlink(file.path).catch(() => { })));
         return next(new AppError('Error uploading images: ' + error.message, 500));
     }
 });
 
 export const getAllProducts = catchAsyncError(async (req, res, next) => {
-    const products = await ProductModel.find().populate("category");
-    res.status(200).json({ message: "success", products });
+    const {
+        page = 1,
+        limit = 10,
+        sort = '-createdAt',
+        category,
+        minPrice,
+        maxPrice
+    } = req.query;
+
+    // Build filter object
+    const filter = {};
+
+    // Category filter
+    if (category) {
+        const categoryDoc = await mongoose.model('Category').findOne({ name: { $regex: new RegExp(category, 'i') } });
+        if (!categoryDoc) {
+            return next(new AppError('Category not found', 404));
+        }
+        filter.category = categoryDoc._id;
+    }
+
+    // Price range filter
+    if (minPrice || maxPrice) {
+        filter.price = {};
+        if (minPrice) filter.price.$gte = Number(minPrice);
+        if (maxPrice) filter.price.$lte = Number(maxPrice);
+    }
+
+    // Calculate skip value for pagination
+    const skip = (Number(page) - 1) * Number(limit);
+
+    // Execute query with filters and pagination
+    const products = await ProductModel.find(filter)
+        .populate('category')
+        .sort(sort)
+        .skip(skip)
+        .limit(Number(limit));
+
+    // Get total count for pagination
+    const total = await ProductModel.countDocuments(filter);
+
+    res.status(200).json({
+        message: 'success',
+        products,
+        currentPage: Number(page),
+        totalPages: Math.ceil(total / Number(limit)),
+        totalProducts: total
+    });
 });
 
 export const getProductById = catchAsyncError(async (req, res, next) => {
@@ -55,7 +101,7 @@ export const updateProduct = catchAsyncError(async (req, res, next) => {
 
     if (req.body.title) {
         req.body.slug = slugify(req.body.title);
-    } 
+    }
 
     if (req.files && req.files.length > 0) {
         try {
@@ -68,7 +114,7 @@ export const updateProduct = catchAsyncError(async (req, res, next) => {
             await Promise.all(req.files.map(file => fs.unlink(file.path)));
         } catch (error) {
             // Cleanup temporary files in case of error
-            await Promise.all(req.files.map(file => fs.unlink(file.path).catch(() => {})));
+            await Promise.all(req.files.map(file => fs.unlink(file.path).catch(() => { })));
             return next(new AppError('Error uploading images: ' + error.message, 500));
         }
     }

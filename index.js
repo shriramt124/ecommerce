@@ -36,7 +36,7 @@ app.use("/cart", cartRouter);
 app.use("/orders", orderRouter);
 app.use("/reviews", reviewRouter);
 app.use("/carousel", carouselRouter);
-app.use("/products", productRouter);
+app.use("/api/products", productRouter);
 app.use("/category", categoryRouter);
 
 
