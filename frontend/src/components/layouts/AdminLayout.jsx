@@ -5,8 +5,8 @@ import Footer from '../Footer';
 
 const AdminLayout = () => {
   const { isAuthenticated, user } = useAuthHook();
-    console.log(isAuthenticated)
-    console.log(user)
+    
+   
   // Check if user is authenticated and is an admin
   if (!isAuthenticated || !user?.role === 'admin') {
     return <Navigate to="/login" replace />;

@@ -3,6 +3,8 @@ import { AppError } from "../utils/ApiError.js";
 import { catchAsyncError } from "../utils/catchAsyncErrors.js";
 import { uploadToCloudinary } from "../config/cloudinary.js";
 import fs from 'fs/promises';
+import OrderModel from "../model/order.model.js";
+import ProductModel from "../model/product.model.js";
 
 
 export const getAllUsers = catchAsyncError(async (req, res, next) => {
@@ -84,4 +86,29 @@ export const unblockUser = catchAsyncError(async (req, res, next) => {
         message: "User unblocked successfully",
         unblock
     });
-})
+});
+
+export const getDashboardStats = catchAsyncError(async (req, res, next) => {
+    // Get user statistics
+    console.log("it is running")
+    const users = await User.find();
+    const totalUsers = users.length;
+    const activeUsers = users.filter(user => !user.isBlocked).length;
+
+    // Get product statistics
+    const totalProducts = await ProductModel.countDocuments();
+
+    // Get order statistics
+    const orders = await OrderModel.find();
+    const totalOrders = orders.length;
+    const revenue = orders.reduce((total, order) => total + (order.totalPrice || 0), 0);
+ console.log("it is running")
+    res.status(200).json({
+        totalUsers,
+        activeUsers,
+        totalProducts,
+        totalOrders,
+        revenue
+    });
+
+});
