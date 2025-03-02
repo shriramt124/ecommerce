@@ -19,7 +19,7 @@ router.get('/:id', getProductById);
 
 // Protected routes
 router.post('/', protect, uploadMultipleImages, handleMulterError, createProduct);
-router.put('/:id', protect, updateProduct);
+router.put('/:id', protect, uploadMultipleImages, handleMulterError, updateProduct);
 router.delete('/:id', protect, deleteProduct);
 
 export default router;

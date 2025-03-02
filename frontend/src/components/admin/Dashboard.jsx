@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FiUsers, FiPackage, FiDollarSign, FiShoppingBag, FiHome } from 'react-icons/fi';
+import { FiUsers, FiPackage, FiDollarSign, FiShoppingBag, FiHome, FiList } from 'react-icons/fi';
 import { fetchDashboardStats, fetchAllUsers } from '../../store/features/adminSlice';
 import UsersPanel from './UsersPanel';
 import ProductsPanel from './ProductsPanel';
+import CategoriesPanel from './CategoriesPanel';
 const Dashboard = () => {
     const dispatch = useDispatch();
     const { stats, loading, error } = useSelector((state) => state.admin);
@@ -39,6 +40,8 @@ const Dashboard = () => {
                 return <UsersPanel />;
             case 'products':
                 return <ProductsPanel />;
+            case 'categories':
+                return <CategoriesPanel />;
             default:
                 return (
                     <div className="container mx-auto">
@@ -178,6 +181,13 @@ const Dashboard = () => {
                         <button className="flex-shrink-0 flex items-center justify-center md:justify-start w-12 h-12 md:w-full md:h-auto px-0 md:px-3 py-2 text-gray-600 hover:bg-black hover:text-white rounded-lg transition-all duration-200 group">
                             <FiShoppingBag className="h-6 w-6" />
                             <span className="ml-3 hidden lg:inline-block">Orders</span>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('categories')}
+                            className={`flex-shrink-0 flex items-center justify-center md:justify-start w-12 h-12 md:w-full md:h-auto px-0 md:px-3 py-2 rounded-lg transition-all duration-200 group ${activeTab === 'categories' ? 'bg-black text-white' : 'text-gray-600 hover:bg-black hover:text-white'}`}
+                        >
+                            <FiList className="h-6 w-6" />
+                            <span className="ml-3 hidden lg:inline-block">Categories</span>
                         </button>
                     </div>
                 </nav>

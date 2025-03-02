@@ -99,8 +99,10 @@ export const updateProduct = catchAsyncError(async (req, res, next) => {
         return next(new AppError("Product was not found", 404));
     }
 
-    if (req.body.title) {
-        req.body.slug = slugify(req.body.title);
+    const updateData = { ...req.body };
+
+    if (updateData.title) {
+        updateData.slug = slugify(updateData.title);
     }
 
     if (req.files && req.files.length > 0) {
@@ -108,7 +110,9 @@ export const updateProduct = catchAsyncError(async (req, res, next) => {
             // Upload new images to Cloudinary
             const uploadPromises = req.files.map(file => uploadToCloudinary(file));
             const uploadedImages = await Promise.all(uploadPromises);
-            req.body.images = uploadedImages;
+            
+            // Combine existing images with new ones if no clear instruction to replace
+            updateData.images = [...product.images, ...uploadedImages];
 
             // Cleanup temporary files
             await Promise.all(req.files.map(file => fs.unlink(file.path)));
@@ -119,9 +123,15 @@ export const updateProduct = catchAsyncError(async (req, res, next) => {
         }
     }
 
-    const updatedProduct = await ProductModel.findByIdAndUpdate(productId, req.body, {
-        new: true
-    });
+    const updatedProduct = await ProductModel.findByIdAndUpdate(
+        productId, 
+        updateData, 
+        { new: true }
+    ).populate('category');
+
+    if (!updatedProduct) {
+        return next(new AppError("Error updating product", 400));
+    }
 
     res.status(200).json({ message: "success", updatedProduct });
 });

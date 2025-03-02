@@ -14,6 +14,7 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
         category: '',
         images: []
     });
+    const [imageFiles, setImageFiles] = useState([]);
 
     useEffect(() => {
         dispatch(fetchCategories());
@@ -26,6 +27,7 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
                 category: product.category?._id || '',
                 images: product.images || []
             });
+            setImageFiles([]); // Reset image files when editing
         } else {
             setFormData({
                 title: '',
@@ -35,6 +37,7 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
                 category: '',
                 images: []
             });
+            setImageFiles([]);
         }
     }, [product]);
 
@@ -46,9 +49,28 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
         }));
     };
 
+    const handleImageChange = (e) => {
+        const files = Array.from(e.target.files);
+        setImageFiles(files);
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit(formData);
+        const productFormData = new FormData();
+
+        // Append text fields
+        productFormData.append('title', formData.title);
+        productFormData.append('description', formData.description);
+        productFormData.append('price', formData.price);
+        productFormData.append('quantity', formData.quantity);
+        productFormData.append('category', formData.category);
+
+        // Append image files
+        imageFiles.forEach(file => {
+            productFormData.append('images', file);
+        });
+
+        onSubmit(productFormData);
     };
 
     if (!isOpen) return null;
@@ -185,10 +207,7 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
                                                     multiple
                                                     accept="image/*"
                                                     className="sr-only"
-                                                    onChange={(e) => {
-                                                        // TODO: Handle image upload
-                                                        console.log(e.target.files);
-                                                    }}
+                                                    onChange={handleImageChange}
                                                 />
                                             </label>
                                         </div>

@@ -37,6 +37,7 @@ export const fetchProductById = createAsyncThunk('products/fetchProductById', as
 });
 
 export const createProduct = createAsyncThunk('products/createProduct', async (productData) => {
+    console.log(productData,"fromt eh product slice")
     const response = await axios.post(API_URL, productData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true

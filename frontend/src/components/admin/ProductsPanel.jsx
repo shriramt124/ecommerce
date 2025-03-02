@@ -249,14 +249,15 @@ const ProductsPanel = () => {
                 onSubmit={async (formData) => {
                     try {
                         if (selectedProduct) {
-                            await dispatch(updateProduct({ id: selectedProduct._id, ...formData }));
+                            await dispatch(updateProduct({ id: selectedProduct._id, productData: formData }));
                         } else {
                             await dispatch(createProduct(formData));
                         }
-                        dispatch(fetchProducts());
+                        await dispatch(fetchProducts());
                         setIsModalOpen(false);
                     } catch (error) {
-                        console.error('Error saving product:', error);
+                        console.error('Error saving product:', error.response?.data?.message || error.message);
+                        alert(error.response?.data?.message || 'Error saving product');
                     }
                 }}
             />
