@@ -66,29 +66,27 @@ const ProductList = () => {
     );
 
     return (
-        <div className="container mx-auto px-4 py-8 mt-[100px]">
+        <div className="container mx-auto px-4 py-8 mt-[100px] max-w-7xl">
             {/* Mobile Filter Button */}
             <div className="md:hidden mb-4">
                 <button
                     onClick={toggleFilterModal}
-                    className="w-full py-2 px-4 bg-white border border-gray-300 rounded-lg shadow-sm flex items-center justify-between"
+                    className="w-full py-2 px-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between border border-gray-200"
                 >
                     <div className="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                         </svg>
-                        Filter and sort
+                        <span className="text-sm font-medium text-gray-700">Filter and sort</span>
                     </div>
-                    <span>{totalProducts} products</span>
+                    <span className="text-sm font-medium text-gray-600">{totalProducts} products</span>
                 </button>
             </div>
 
             {/* Desktop Filter Bar */}
-            <div className="hidden md:flex items-center justify-between mb-8 bg-white p-4 rounded-lg shadow-sm">
+            <div className="hidden md:flex items-center justify-between mb-8 bg-white p-4">
                 <div className="flex items-center">
-                    <span className="mr-4">Filter:</span>
-
-                    {/* Remove Availability Dropdown */}
+                    <span className="mr-4 text-lg">Filter:</span>
 
                     {/* Price Dropdown */}
                     <div className="relative" ref={priceRef}>
@@ -96,18 +94,18 @@ const ProductList = () => {
                             onClick={() => {
                                 setPriceDropdownOpen(!priceDropdownOpen);
                             }}
-                            className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                            className="flex items-center px-3 py-1.5 text-lg hover:bg-gray-50 rounded transition-colors"
                         >
                             Price
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
 
                         {/* Price Dropdown Menu */}
                         {priceDropdownOpen && (
-                            <div className="absolute z-10 mt-2 w-48 bg-white rounded-lg shadow-lg p-3">
-                                <div className="space-y-2">
+                            <div className="absolute z-10 mt-1 w-44 bg-white p-2">
+                                <div className="space-y-1">
                                     <label className="flex items-center">
                                         <input
                                             type="radio"
@@ -115,9 +113,9 @@ const ProductList = () => {
                                             value="0-1000"
                                             checked={filters.priceRange === '0-1000'}
                                             onChange={(e) => handleFilterChange('priceRange', e.target.value)}
-                                            className="h-4 w-4 text-blue-600"
+                                            className="h-4 w-4"
                                         />
-                                        <span className="ml-2">Under ₹1,000</span>
+                                        <span className="ml-2 text-base">Under ₹1,000</span>
                                     </label>
                                     <label className="flex items-center">
                                         <input
@@ -126,9 +124,9 @@ const ProductList = () => {
                                             value="1000-5000"
                                             checked={filters.priceRange === '1000-5000'}
                                             onChange={(e) => handleFilterChange('priceRange', e.target.value)}
-                                            className="h-4 w-4 text-blue-600"
+                                            className="h-4 w-4"
                                         />
-                                        <span className="ml-2">₹1,000 - ₹5,000</span>
+                                        <span className="ml-2 text-base">₹1,000 - ₹5,000</span>
                                     </label>
                                     <label className="flex items-center">
                                         <input
@@ -137,9 +135,9 @@ const ProductList = () => {
                                             value="5000-10000"
                                             checked={filters.priceRange === '5000-10000'}
                                             onChange={(e) => handleFilterChange('priceRange', e.target.value)}
-                                            className="h-4 w-4 text-blue-600"
+                                            className="h-4 w-4"
                                         />
-                                        <span className="ml-2">₹5,000 - ₹10,000</span>
+                                        <span className="ml-2 text-base">₹5,000 - ₹10,000</span>
                                     </label>
                                     <label className="flex items-center">
                                         <input
@@ -148,9 +146,9 @@ const ProductList = () => {
                                             value="10000+"
                                             checked={filters.priceRange === '10000+'}
                                             onChange={(e) => handleFilterChange('priceRange', e.target.value)}
-                                            className="h-4 w-4 text-blue-600"
+                                            className="h-4 w-4"
                                         />
-                                        <span className="ml-2">Over ₹10,000</span>
+                                        <span className="ml-2 text-base">Over ₹10,000</span>
                                     </label>
                                 </div>
                             </div>
@@ -160,11 +158,11 @@ const ProductList = () => {
 
                 {/* Sort Dropdown */}
                 <div className="flex items-center">
-                    <span className="mr-2">Sort by:</span>
+                    <span className="mr-2 text-lg">Sort by:</span>
                     <select
                         value={filters.sort || '-createdAt'}
                         onChange={(e) => handleFilterChange('sort', e.target.value)}
-                        className="bg-white border border-gray-300 rounded-lg px-4 py-2 appearance-none cursor-pointer hover:border-gray-400 focus:outline-none"
+                        className="bg-white text-base py-1.5 px-3 appearance-none cursor-pointer hover:bg-gray-50 rounded transition-colors"
                     >
                         <option value="featured">Featured</option>
                         <option value="-createdAt">Newest First</option>
@@ -172,7 +170,7 @@ const ProductList = () => {
                         <option value="-price">Price: High to Low</option>
                         <option value="price">Price: Low to High</option>
                     </select>
-                    <span className="ml-4">{totalProducts} products</span>
+                    <span className="ml-4 text-base">{totalProducts} products</span>
                 </div>
             </div>
 
@@ -273,33 +271,33 @@ const ProductList = () => {
             {/* Products Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {products && products.map((product) => (
-                    <div key={product._id} className="group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1">
+                    <div key={product._id} className="group relative bg-gray-200/50   shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
                         <Link to={`/products/${product._id}`} className="block">
-                            <div className="relative overflow-hidden aspect-w-1 aspect-h-1">
+                            <div className="relative overflow-hidden">
                                 <img
                                     src={product.images[0]}
                                     alt={product.title}
-                                    className="w-full h-48 object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                    className="w-full h-[280px] object-cover transform group-hover:scale-105 transition-transform duration-500"
                                 />
                                 {product.price < 500 && (
-                                    <span className="absolute top-2 right-2 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Special Offer</span>
+                                    <span className="absolute top-4 right-4 bg-black text-white text-xs font-medium px-3 py-1.5 rounded-full">Sale</span>
                                 )}
                             </div>
-                            <div className="p-5">
-                                <h3 className="text-lg font-semibold text-gray-800 mb-2 group-hover:text-black transition-colors">{product.title}</h3>
-                                <div className="flex items-center justify-between mb-2">
-                                    <p className="text-lg font-bold text-gray-900">₹{product.price}</p>
-                                    <div className="flex items-center">
-                                        <span className="text-yellow-400 mr-1">★</span>
+                            <div className="p-6">
+                                <h3 className="text-lg font-medium text-gray-900 mb-2 group-hover:text-black transition-colors line-clamp-1">{product.title}</h3>
+                                <div className="flex items-center justify-between mb-3">
+                                    <p className="text-xl font-bold text-gray-900">₹{product.price.toFixed(2)}</p>
+                                    <div className="flex items-center gap-1">
+                                        <span className="text-yellow-400 text-lg">★</span>
                                         <span className="text-sm text-gray-600">
                                             {product.averageRating ? product.averageRating.toFixed(1) : 'New'}
                                         </span>
                                     </div>
                                 </div>
-                                <div className="mt-2 flex items-center justify-between">
-                                    <span className="text-sm text-gray-500">{product.category?.name || 'General'}</span>
-                                    <button className="bg-black text-white px-4 py-1.5 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-gray-800">
-                                        View Details
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm text-gray-500 capitalize">{product.category?.name || 'General'}</span>
+                                    <button className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-all duration-300">
+                                        Add to Cart
                                     </button>
                                 </div>
                             </div>

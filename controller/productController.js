@@ -18,7 +18,20 @@ export const createProduct = catchAsyncError(async (req, res, next) => {
         req.body.images = uploadedImages;
         req.body.slug = slugify(req.body.title);
         console.log(req.body)
-        const addProduct = new ProductModel({ ...req.body, category: req.body.category });
+        // Extract and validate accordion sections, specifications, features, and new fields
+        const { accordionSections, specifications, features, keyFeatures, faq, video, ...otherData } = req.body;
+        
+        // Create the product with all fields
+        const addProduct = new ProductModel({
+            ...otherData,
+            category: req.body.category,
+            accordionSections: accordionSections ? JSON.parse(accordionSections) : [],
+            specifications: specifications ? JSON.parse(specifications) : [],
+            features: features ? JSON.parse(features) : [],
+            keyFeatures: keyFeatures ? JSON.parse(keyFeatures) : [],
+            faq: faq ? JSON.parse(faq) : [],
+            video: video || null
+        });
         console.log(addProduct);
 
         await addProduct.save();
@@ -98,8 +111,23 @@ export const updateProduct = catchAsyncError(async (req, res, next) => {
     if (!product) {
         return next(new AppError("Product was not found", 404));
     }
-
-    const updateData = { ...req.body };
+    const { accordionSections, specifications, features, keyFeatures, faq, video, ...otherData } = req.body;
+    const updateData = {
+        ...otherData,
+        accordionSections: accordionSections ? JSON.parse(accordionSections) : undefined,
+        specifications: specifications ? JSON.parse(specifications) : undefined,
+        features: features ? JSON.parse(features) : undefined,
+        keyFeatures: keyFeatures ? JSON.parse(keyFeatures) : undefined,
+        faq: faq ? JSON.parse(faq) : undefined,
+        video: video || undefined
+    };
+    
+    // Remove undefined fields
+    Object.keys(updateData).forEach(key => {
+        if (updateData[key] === undefined) {
+            delete updateData[key];
+        }
+    });
 
     if (updateData.title) {
         updateData.slug = slugify(updateData.title);

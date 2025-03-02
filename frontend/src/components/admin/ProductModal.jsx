@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FiX } from 'react-icons/fi';
+import { FiX, FiPlus, FiTrash2 } from 'react-icons/fi';
 import { fetchCategories } from '../../store/features/categorySlice';
+import { useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
 
 const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
     const dispatch = useDispatch();
@@ -13,12 +15,35 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
         quantity: '',
         category: '',
         images: [],
-        video: ''
+        video: '',
+        keyFeatures: [{ feature: '' }],
+        faq: [{ question: '', answer: '' }]
     });
     const [imageFiles, setImageFiles] = useState([]);
 
     useEffect(() => {
-        dispatch(fetchCategories());
+        const fetchData = async () => {
+            await dispatch(fetchCategories());
+        };
+        fetchData();
+        return () => {
+            // Cleanup effect
+            setFormData({
+                title: '',
+                description: '',
+                price: '',
+                quantity: '',
+                category: '',
+                images: [],
+                video: '',
+                keyFeatures: [{ feature: '' }],
+                faq: [{ question: '', answer: '' }]
+            });
+            setImageFiles([]);
+        };
+    }, [dispatch]);
+
+    useEffect(() => {
         if (product) {
             setFormData({
                 title: product.title || '',
@@ -27,9 +52,11 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
                 quantity: product.quantity || '',
                 category: product.category?._id || '',
                 images: product.images || [],
-                video: product.video || ''
+                video: product.video || '',
+                keyFeatures: product.keyFeatures?.length ? product.keyFeatures : [{ feature: '' }],
+                faq: product.faq?.length ? product.faq : [{ question: '', answer: '' }]
             });
-            setImageFiles([]); // Reset image files when editing
+            setImageFiles([]);
         } else {
             setFormData({
                 title: '',
@@ -38,7 +65,9 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
                 quantity: '',
                 category: '',
                 images: [],
-                video: ''
+                video: '',
+                keyFeatures: [{ feature: '' }],
+                faq: [{ question: '', answer: '' }]
             });
             setImageFiles([]);
         }
@@ -57,7 +86,47 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
         setImageFiles(files);
     };
 
-    const handleSubmit = (e) => {
+    const handleKeyFeatureChange = (index, value) => {
+        const newKeyFeatures = [...formData.keyFeatures];
+        newKeyFeatures[index].feature = value;
+        setFormData(prev => ({ ...prev, keyFeatures: newKeyFeatures }));
+    };
+
+    const handleAddKeyFeature = () => {
+        setFormData(prev => ({
+            ...prev,
+            keyFeatures: [...prev.keyFeatures, { feature: '' }]
+        }));
+    };
+
+    const handleRemoveKeyFeature = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            keyFeatures: prev.keyFeatures.filter((_, i) => i !== index)
+        }));
+    };
+
+    const handleFAQChange = (index, field, value) => {
+        const newFAQ = [...formData.faq];
+        newFAQ[index][field] = value;
+        setFormData(prev => ({ ...prev, faq: newFAQ }));
+    };
+
+    const handleAddFAQ = () => {
+        setFormData(prev => ({
+            ...prev,
+            faq: [...prev.faq, { question: '', answer: '' }]
+        }));
+    };
+
+    const handleRemoveFAQ = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            faq: prev.faq.filter((_, i) => i !== index)
+        }));
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const productFormData = new FormData();
 
@@ -68,6 +137,8 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
         productFormData.append('quantity', formData.quantity);
         productFormData.append('category', formData.category);
         productFormData.append('video', formData.video);
+        productFormData.append('keyFeatures', JSON.stringify(formData.keyFeatures));
+        productFormData.append('faq', JSON.stringify(formData.faq));
 
         // Append image files
         imageFiles.forEach(file => {
@@ -80,24 +151,28 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 transition-opacity">
-            <div className="flex items-center justify-center min-h-screen px-4 py-8 text-center sm:block sm:p-0">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500/50 bg-opacity-75 transition-opacity">
+            <div className="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
                 <div className="fixed inset-0 transition-opacity" aria-hidden="true">
                     <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
                 </div>
 
-                <div className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full scale-95 sm:scale-100">
-                    <div className="bg-white px-4 pt-5 pb-4 sm:p-8">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-semibold text-gray-900 tracking-tight">
-                                {product ? 'Edit Product' : 'Create New Product'}
-                            </h3>
-                            <button
-                                onClick={onClose}
-                                className="text-gray-400 hover:text-gray-500 transition-colors duration-200 p-2 rounded-full hover:bg-gray-100"
-                            >
-                                <FiX className="h-6 w-6" />
-                            </button>
+                <div className="inline-block w-full transform overflow-hidden rounded-t-xl sm:rounded-xl bg-white text-left align-bottom shadow-2xl transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
+                    <div className="bg-white px-4 pt-5 pb-4 sm:p-6 max-h-[85vh] overflow-y-auto">
+                        <div className="sm:flex sm:items-start mb-4 sm:mb-6">
+                            <div className="w-full">
+                                <div className="flex justify-between items-center">
+                                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 tracking-tight">
+                                        {product ? 'Edit Product' : 'Create New Product'}
+                                    </h3>
+                                    <button
+                                        onClick={onClose}
+                                        className="rounded-full p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none transition-colors duration-200"
+                                    >
+                                        <FiX className="h-5 w-5 sm:h-6 sm:w-6" />
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-6">
@@ -111,7 +186,7 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
                                     onChange={handleChange}
                                     required
                                     minLength={3}
-                                    className="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-colors duration-200"
+                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-colors duration-200"
                                 />
                             </div>
 
@@ -130,9 +205,9 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price</label>
+                                    <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">Price</label>
                                     <input
                                         type="number"
                                         id="price"
@@ -142,7 +217,7 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
                                         required
                                         min="0"
                                         step="0.01"
-                                        className="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-colors duration-200"
+                                        className="w-full rounded-lg border border-gray-300 px-3 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-colors duration-200"
                                     />
                                 </div>
 
@@ -180,71 +255,143 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
                                 </select>
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Images</label>
-                                <div className="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-gray-400 transition-colors duration-200">
-                                    <div className="space-y-1 text-center">
-                                        <svg
-                                            className="mx-auto h-12 w-12 text-gray-400"
-                                            stroke="currentColor"
-                                            fill="none"
-                                            viewBox="0 0 48 48"
-                                            aria-hidden="true"
-                                        >
-                                            <path
-                                                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                                                strokeWidth={2}
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            />
-                                        </svg>
-                                        <div className="flex text-sm text-gray-600">
-                                            <label
-                                                htmlFor="images"
-                                                className="relative cursor-pointer bg-white rounded-md font-medium text-black hover:text-gray-700 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-black"
-                                            >
-                                                <span>Upload files</span>
-                                                <input
-                                                    id="images"
-                                                    name="images"
-                                                    type="file"
-                                                    multiple
-                                                    accept="image/*"
-                                                    className="sr-only"
-                                                    onChange={handleImageChange}
-                                                />
-                                            </label>
-                                        </div>
-                                        <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                                    </div>
+                            {/* Key Features Section */}
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <label className="block text-sm font-medium text-gray-700">Key Features</label>
+                                    <button
+                                        type="button"
+                                        onClick={handleAddKeyFeature}
+                                        className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
+                                    >
+                                        <FiPlus className="-ml-1 mr-2 h-4 w-4" />
+                                        Add Feature
+                                    </button>
                                 </div>
+                                {formData.keyFeatures.map((feature, index) => (
+                                    <div key={index} className="flex items-center gap-2">
+                                        <input
+                                            type="text"
+                                            value={feature.feature}
+                                            onChange={(e) => handleKeyFeatureChange(index, e.target.value)}
+                                            placeholder="Enter a key feature"
+                                            className="flex-1 border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-colors duration-200"
+                                            required
+                                        />
+                                        {formData.keyFeatures.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveKeyFeature(index)}
+                                                className="p-2 text-red-600 hover:text-red-800 focus:outline-none"
+                                            >
+                                                <FiTrash2 className="h-5 w-5" />
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* FAQ Section */}
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <label className="block text-sm font-medium text-gray-700">FAQ</label>
+                                    <button
+                                        type="button"
+                                        onClick={handleAddFAQ}
+                                        className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
+                                    >
+                                        <FiPlus className="-ml-1 mr-2 h-4 w-4" />
+                                        Add FAQ
+                                    </button>
+                                </div>
+                                {formData.faq.map((faq, index) => (
+                                    <div key={index} className="space-y-2">
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex-1 space-y-2">
+                                                <input
+                                                    type="text"
+                                                    value={faq.question}
+                                                    onChange={(e) => handleFAQChange(index, 'question', e.target.value)}
+                                                    placeholder="Question"
+                                                    className="w-full border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-colors duration-200"
+                                                    required
+                                                />
+                                                <textarea
+                                                    value={faq.answer}
+                                                    onChange={(e) => handleFAQChange(index, 'answer', e.target.value)}
+                                                    placeholder="Answer"
+                                                    rows={2}
+                                                    className="w-full border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-colors duration-200"
+                                                    required
+                                                />
+                                                {formData.faq.length > 1 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveFAQ(index)}
+                                                        className="p-2 text-red-600 hover:text-red-800 focus:outline-none self-start"
+                                                    >
+                                                        <FiTrash2 className="h-5 w-5" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
 
                             <div>
-                                <label htmlFor="video" className="block text-sm font-medium text-gray-700">YouTube Video URL</label>
+                                <label htmlFor="video" className="block text-sm font-medium text-gray-700">Video URL</label>
                                 <input
                                     type="url"
                                     id="video"
                                     name="video"
                                     value={formData.video}
                                     onChange={handleChange}
-                                    placeholder="https://www.youtube.com/watch?v=..."
+                                    placeholder="Enter video URL (optional)"
                                     className="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-colors duration-200"
                                 />
-                                <p className="mt-1 text-sm text-gray-500">Add a YouTube video URL to showcase your product</p>
                             </div>
 
-                            <div className="mt-5 sm:mt-6 flex space-x-3">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Images</label>
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="mt-2 block w-full text-sm text-gray-500
+                                    file:mr-4 file:py-2 file:px-4
+                                    file:rounded-md file:border-0
+                                    file:text-sm file:font-semibold
+                                    file:bg-black file:text-white
+                                    hover:file:bg-gray-800"
+                                />
+                                {formData.images.length > 0 && (
+                                    <div className="mt-2 grid grid-cols-3 gap-2">
+                                        {formData.images.map((image, index) => (
+                                            <div key={index} className="relative">
+                                                <img
+                                                    src={image}
+                                                    alt={`Product ${index + 1}`}
+                                                    className="h-20 w-20 object-cover rounded-lg"
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-3">
                                 <button
                                     type="submit"
-                                    className="inline-flex justify-center w-full rounded-lg border border-transparent shadow-sm px-6 py-3 bg-black text-base font-medium text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black sm:text-sm transition-all duration-200 transform hover:scale-[1.02]"
+                                    className="w-full sm:flex-1 justify-center rounded-lg border border-transparent px-4 py-2 sm:py-3 bg-black text-base font-medium text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-all duration-200 transform hover:scale-[1.02]"
                                 >
                                     {product ? 'Update Product' : 'Create Product'}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="inline-flex justify-center w-full rounded-lg border border-gray-300 shadow-sm px-6 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black sm:text-sm transition-all duration-200 transform hover:scale-[1.02]"
+                                    className="w-full sm:flex-1 justify-center rounded-lg border border-gray-300 px-4 py-2 sm:py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-all duration-200 transform hover:scale-[1.02]"
                                 >
                                     Cancel
                                 </button>

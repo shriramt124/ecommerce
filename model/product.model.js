@@ -22,7 +22,7 @@ const productSchema = new Schema(
             required: true,
             trim: true,
             minLength: [10, "Description must be at least 10 characters long"],
-            maxLength: [500, "Description cannot exceed 500 characters"],
+            maxLength: [1000, "Description cannot exceed 1000 characters"],
         },
         price: {
             type: Number,
@@ -36,7 +36,7 @@ const productSchema = new Schema(
             min: [0, "Quantity cannot be negative"],
         },
         category: {
-            type:mongoose.Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
             ref: "Category",
             required: true,
         },
@@ -44,9 +44,25 @@ const productSchema = new Schema(
             type: [String],
             required: true,
         },
-        video: {
-            type: String, // Optional video URL or path
-        },
+        keyFeatures: [{
+            feature: {
+                type: String,
+                required: true,
+                trim: true
+            }
+        }],
+        faq: [{
+            question: {
+                type: String,
+                required: true,
+                trim: true
+            },
+            answer: {
+                type: String,
+                required: true,
+                trim: true
+            }
+        }],
         averageRating: {
             type: Number,
             default: 0,
@@ -58,6 +74,10 @@ const productSchema = new Schema(
             default: 0,
             min: [0, "Total reviews cannot be negative"]
         },
+        video: {
+            type: String,
+            trim: true
+        }
     },
     { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
