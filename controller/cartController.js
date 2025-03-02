@@ -7,7 +7,12 @@ export const addToCart = catchAsyncError(async (req, res, next) => {
     const { productId, quantity } = req.body;
     const userId = req.user._id;
 
-    const product = await ProductModel.findById(productId);
+    // Ensure productId is a valid string before querying
+    if (!productId || typeof productId !== 'string') {
+        return next(new AppError('Invalid product ID', 400));
+    }
+
+    const product = await ProductModel.findById(productId.toString());
     if (!product) {
         return next(new AppError('Product not found', 404));
     }
@@ -70,7 +75,12 @@ export const updateCart = catchAsyncError(async (req, res, next) => {
     const { productId, quantity } = req.body;
     const userId = req.user._id;
 
-    const product = await ProductModel.findById(productId); // Fetch the product information
+    // Ensure productId is a valid string before querying
+    if (!productId || typeof productId !== 'string') {
+        return next(new AppError('Invalid product ID', 400));
+    }
+
+    const product = await ProductModel.findById(productId.toString());
     if (!product) {
         return next(new AppError('Product not found', 404));
     }
@@ -81,10 +91,10 @@ export const updateCart = catchAsyncError(async (req, res, next) => {
     }
 
     let productExists = false;
-    cart.cartItem.forEach((item, index) => {
+    cart.cartItem.forEach((item) => {
         if (item.productId.toString() === productId) {
             item.quantity = quantity;
-            item.price = product.price; // Use the fetched product price
+            item.price = product.price;
             item.totalProductDiscount = 0;
             productExists = true;
         }
@@ -108,6 +118,11 @@ export const updateCart = catchAsyncError(async (req, res, next) => {
 export const deleteFromCart = catchAsyncError(async (req, res, next) => {
     const { productId } = req.body;
     const userId = req.user._id;
+
+    // Ensure productId is a valid string before querying
+    if (!productId || typeof productId !== 'string') {
+        return next(new AppError('Invalid product ID', 400));
+    }
 
     const cart = await cartModel.findOne({ userId });
     if (!cart) {

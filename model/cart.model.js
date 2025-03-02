@@ -1,14 +1,14 @@
 import { Schema, model } from 'mongoose';
-
+import mongoose from "mongoose"
 const cartSchema = new Schema(
   {
     userId: {
-      type: Schema.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'user',
     },
     cartItem: [
       {
-        productId: { type: Schema.ObjectId, ref: 'product' },
+        productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
         quantity: {
           type: Number,
           default: 1,

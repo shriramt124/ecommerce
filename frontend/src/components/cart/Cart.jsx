@@ -40,6 +40,7 @@ const Cart = () => {
         try {
             setLoading(true);
             const response = await getCart();
+            console.log(response)
             if (response.success && response.cart) {
                 // Transform the cart data to match our component structure
                 const transformedCart = {
@@ -48,13 +49,14 @@ const Cart = () => {
                         name: item.productId.name,
                         price: item.price,
                         quantity: item.quantity,
-                        image: item.productId.images[0]?.url || 'https://via.placeholder.com/150',
+                        image: item.productId.images[0] || 'https://via.placeholder.com/150',
                     })),
                     subtotal: response.cart.totalPrice,
                     shipping: 100.00, // This could be dynamic based on backend logic
                     tax: response.cart.totalPrice * 0.1, // Assuming 10% tax
                     total: response.cart.totalPriceAfterDiscount || response.cart.totalPrice + 100.00 + (response.cart.totalPrice * 0.1),
                 };
+                {console.log(transformedCart)}
                 setCart(transformedCart);
             } else {
                 // If no cart exists yet, set empty cart

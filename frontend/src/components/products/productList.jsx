@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProducts, setFilters, resetFilters } from '../../store/features/productSlice';
+import { addItemToCart } from '../../store/features/cartSlice';
 import { Link } from 'react-router-dom';
 import React from "react"
 
@@ -296,7 +297,13 @@ const ProductList = () => {
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm text-gray-500 capitalize">{product.category?.name || 'General'}</span>
-                                    <button className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-all duration-300">
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            dispatch(addItemToCart({ productId: product._id, quantity: 1 }));
+                                        }}
+                                        className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-all duration-300"
+                                    >
                                         Add to Cart
                                     </button>
                                 </div>
