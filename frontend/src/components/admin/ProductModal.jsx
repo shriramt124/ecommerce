@@ -12,7 +12,8 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
         price: '',
         quantity: '',
         category: '',
-        images: []
+        images: [],
+        video: ''
     });
     const [imageFiles, setImageFiles] = useState([]);
 
@@ -25,7 +26,8 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
                 price: product.price || '',
                 quantity: product.quantity || '',
                 category: product.category?._id || '',
-                images: product.images || []
+                images: product.images || [],
+                video: product.video || ''
             });
             setImageFiles([]); // Reset image files when editing
         } else {
@@ -35,7 +37,8 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
                 price: '',
                 quantity: '',
                 category: '',
-                images: []
+                images: [],
+                video: ''
             });
             setImageFiles([]);
         }
@@ -64,6 +67,7 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
         productFormData.append('price', formData.price);
         productFormData.append('quantity', formData.quantity);
         productFormData.append('category', formData.category);
+        productFormData.append('video', formData.video);
 
         // Append image files
         imageFiles.forEach(file => {
@@ -214,6 +218,20 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
                                         <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div>
+                                <label htmlFor="video" className="block text-sm font-medium text-gray-700">YouTube Video URL</label>
+                                <input
+                                    type="url"
+                                    id="video"
+                                    name="video"
+                                    value={formData.video}
+                                    onChange={handleChange}
+                                    placeholder="https://www.youtube.com/watch?v=..."
+                                    className="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-colors duration-200"
+                                />
+                                <p className="mt-1 text-sm text-gray-500">Add a YouTube video URL to showcase your product</p>
                             </div>
 
                             <div className="mt-5 sm:mt-6 flex space-x-3">
