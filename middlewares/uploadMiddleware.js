@@ -37,7 +37,7 @@ const upload = multer({
 });
 
 // Middleware for handling single image upload
-export const uploadSingleImage = upload.single("image");
+export const uploadSingleImage = upload.single("profileImage");
 
 // Middleware for handling multiple images upload
 export const uploadMultipleImages = upload.array("images", 5); // Maximum 5 images

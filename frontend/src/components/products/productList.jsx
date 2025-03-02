@@ -2,11 +2,15 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProducts, setFilters, resetFilters } from '../../store/features/productSlice';
 import { addItemToCart } from '../../store/features/cartSlice';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import React from "react"
+import { useAuth } from '../../context/AuthContext';
+import { toast } from 'react-toastify';
 
 const ProductList = () => {
+    const navigate = useNavigate();
     const dispatch = useDispatch();
+    const { user,isAuthenticated } = useAuth();
     const { items: products, loading, error, filters, totalPages, currentPage, totalProducts } = useSelector((state) => state.products);
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     // Remove state for tracking availability dropdown visibility
@@ -299,7 +303,13 @@ const ProductList = () => {
                                     <span className="text-sm text-gray-500 capitalize">{product.category?.name || 'General'}</span>
                                     <button
                                         onClick={(e) => {
-                                            e.preventDefault();
+                                            e.preventDefault()
+                                            if (!isAuthenticated) {
+                                                toast.error('Please login to add items to cart');
+                                               
+                                                return;
+                                            }
+
                                             dispatch(addItemToCart({ productId: product._id, quantity: 1 }));
                                         }}
                                         className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-all duration-300"

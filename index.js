@@ -20,16 +20,15 @@ app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser());
 app.use(cors({
   origin: "http://localhost:5173",
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"],
   exposedHeaders: ["Authorization", "Set-Cookie"],
-  preflightContinue: true
+  preflightContinue: false,
+  optionsSuccessStatus: 200
 }))
 
-
 //routes
-
 app.use("/api", authRoutes);
 app.use("/user", userRouter);
 app.use("/cart", cartRouter);
@@ -39,16 +38,13 @@ app.use("/carousel", carouselRouter);
 app.use("/api/products", productRouter);
 app.use("/category", categoryRouter);
 
-
 app.get('/', (req, res) => {
   const name = process.env.NAME || 'World';
   res.send(`Hello ${name}!`);
 });
 
-
 app.use(errorHandler);
 const port = parseInt(process.env.PORT) || 3000;
-
 
 app.listen(port, async () => {
   await connectDB();

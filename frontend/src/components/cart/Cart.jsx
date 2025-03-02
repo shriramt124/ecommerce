@@ -3,9 +3,20 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FiMinus, FiPlus, FiTrash2 } from 'react-icons/fi';
 import { getCart, updateCartItem, removeFromCart } from '../../services/cartService';
 import { toast } from 'react-toastify';
+import { useAuth } from '../../context/AuthContext';
 
 const Cart = () => {
+    const { isAuthenticated } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!isAuthenticated) {
+            navigate('/login');
+            toast.error('Please login to access your cart');
+            return;
+        }
+    }, [isAuthenticated, navigate]);
+   
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [cart, setCart] = useState({

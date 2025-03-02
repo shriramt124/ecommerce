@@ -34,6 +34,7 @@ export const fetchAllUsers = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const { data } = await axios.get('/user', { withCredentials: true });
+            console.log(data ,"from the admin slice");
             return data.users;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch users');

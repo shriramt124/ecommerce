@@ -3,6 +3,7 @@ import Layout from './components/layouts/Layout'
 import Hero from './components/Hero'
 import ShopByCategory from './components/ShopByCategory'
 import NewCollection from './components/NewCollection'
+import AboutEvair from './components/AboutEvair'
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
       <Hero />
       <ShopByCategory />
       <NewCollection />
+      <AboutEvair />
     </div>
   )
 }

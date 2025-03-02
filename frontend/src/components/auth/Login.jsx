@@ -29,7 +29,8 @@ const Login = () => {
       toast.success('Login successful!');
       navigate('/products');
     } catch (error) {
-      toast.error(error.message || 'Login failed. Please try again.');
+      console.log(error)
+      toast.error('Login failed. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

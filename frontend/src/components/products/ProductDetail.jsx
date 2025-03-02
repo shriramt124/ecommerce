@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductById } from '../../store/features/productSlice';
+import { toast } from 'react-toastify';
 
 const ProductDetail = () => {
     const { id } = useParams();
@@ -145,6 +146,14 @@ const ProductDetail = () => {
                         <button 
                             className={`flex-1 py-3 sm:py-4 px-4 sm:px-8 rounded-lg font-medium text-base sm:text-lg transition-colors transform hover:scale-[1.02] duration-200 ${product.quantity > 0 ? 'bg-black text-white hover:bg-gray-900' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
                             disabled={product.quantity === 0}
+                            onClick={() => {
+                                if (!isAuthenticated) {
+                                    toast.error('Please login to add items to cart');
+                                   
+                                    return;
+                                }
+                                dispatch(addItemToCart({ productId: product._id, quantity }));
+                            }}
                         >
                             {product.quantity > 0 ? 'ADD TO CART' : 'OUT OF STOCK'}
                         </button>

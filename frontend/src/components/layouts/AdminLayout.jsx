@@ -1,15 +1,17 @@
 import { Outlet, Navigate } from 'react-router-dom';
-import { useAuthHook } from '../../hooks/useAuthHook';
-import Navbar from '../Navbar';
-import Footer from '../Footer';
+ 
+ 
+import { useAuth } from '../../context/AuthContext';
+ 
 
 const AdminLayout = () => {
-  const { isAuthenticated, user } = useAuthHook();
+  const { isAuthenticated, user } = useAuth();
     
    
   // Check if user is authenticated and is an admin
-  if (!isAuthenticated || !user?.role === 'admin') {
-    return <Navigate to="/login" replace />;
+  if (!isAuthenticated || user?.role !== 'admin') {
+   
+     return  <Navigate to="/login" replace />;
   }
 
   return (

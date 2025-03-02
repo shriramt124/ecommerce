@@ -7,6 +7,8 @@ import './index.css'
 import router from './routes'
 import { AuthProvider } from './context/AuthContext'
 import store from './store/store'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 // Configure axios defaults
 axios.defaults.baseURL = 'http://localhost:3000';
@@ -16,6 +18,18 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}>
       <AuthProvider>
+        <ToastContainer
+          position="bottom-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
         <RouterProvider router={router} />
       </AuthProvider>
     </Provider>
