@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { getCart } from '../../services/cartService';
 
 const Checkout = () => {
   const [formData, setFormData] = useState({
@@ -19,8 +20,44 @@ const Checkout = () => {
     paymentMethod: 'card'
   });
   const [isOrderSummaryVisible, setIsOrderSummaryVisible] = useState(false);
+  const [cart, setCart] = useState({
+    items: [],
+    subtotal: 0,
+    shipping: 0,
+    tax: 0,
+    total: 0
+  });
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
+  const fetchCart = async () => {
+    try {
+      const response = await getCart();
+      if (response.success && response.cart) {
+        const transformedCart = {
+          items: response.cart.cartItem.map(item => ({
+            id: item.productId._id,
+            name: item.productId.name,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.productId.images[0] || 'https://via.placeholder.com/150',
+          })),
+          subtotal: response.cart.totalPrice,
+          shipping: 100.00,
+          tax: response.cart.totalPrice * 0.1,
+          total: response.cart.totalPriceAfterDiscount || response.cart.totalPrice + 100.00 + (response.cart.totalPrice * 0.1),
+        };
+        setCart(transformedCart);
+      }
+    } catch (err) {
+      toast.error(err.message || 'Failed to fetch cart');
+      navigate('/cart');
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -262,16 +299,20 @@ const Checkout = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between text-gray-600">
                 <span>Subtotal</span>
-                <span className="font-medium text-gray-900">₹369.00</span>
+                <span className="font-medium text-gray-900">₹{cart.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex items-center justify-between text-gray-600">
                 <span>Shipping</span>
-                <span className="text-green-600 font-medium">FREE</span>
+                <span className="text-green-600 font-medium">₹{cart.shipping.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between text-gray-600">
+                <span>Tax</span>
+                <span className="font-medium text-gray-900">₹{cart.tax.toFixed(2)}</span>
               </div>
               <div className="border-t border-gray-200 pt-4 mt-4">
                 <div className="flex items-center justify-between">
                   <span className="text-lg font-medium">Total</span>
-                  <span className="text-lg font-bold">₹369.00</span>
+                  <span className="text-lg font-bold">₹{cart.total.toFixed(2)}</span>
                 </div>
               </div>
             </div>
