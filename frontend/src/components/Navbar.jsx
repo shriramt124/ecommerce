@@ -42,11 +42,9 @@ const Navbar = () => {
 
           {/* Navigation Links - Desktop */}
           <div className="hidden md:flex space-x-8 flex-grow justify-center">
-            <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">Car Perfume</a>
-            <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">Candles</a>
-            <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">Home & Decor</a>
-            <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">Personal Care</a>
-            <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">Shop By Fragrance</a>
+            <a href="/products" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">All Products</a>
+            <a href="/about" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">About Us</a>
+            <a href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">Contact Us</a>
           </div>
 
           {/* Icons and Mobile Menu Button */}
@@ -123,11 +121,9 @@ const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden absolute top-16 left-0 w-full bg-white shadow-lg">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              <a href="#" className="block px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200">Car Perfume</a>
-              <a href="#" className="block px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200">Candles</a>
-              <a href="#" className="block px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200">Home & Decor</a>
-              <a href="#" className="block px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200">Personal Care</a>
-              <a href="#" className="block px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200">Shop By Fragrance</a>
+              <a href="/products" className="block px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200">All Products</a>
+              <a href="/about" className="block px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200">About Us</a>
+              <a href="/contact" className="block px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200">Contact Us</a>
             </div>
           </div>
         )}
