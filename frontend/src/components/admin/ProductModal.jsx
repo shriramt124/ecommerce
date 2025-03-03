@@ -8,6 +8,7 @@ import { useDropzone } from 'react-dropzone';
 const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
     const dispatch = useDispatch();
     const { items: categories, loading: categoriesLoading } = useSelector((state) => state.categories);
+    // Update the initial formData state
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -17,7 +18,11 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
         images: [],
         video: '',
         keyFeatures: [{ feature: '' }],
-        faq: [{ question: '', answer: '' }]
+        faq: [{ question: '', answer: '' }],
+        isNewArrival: false,
+        isInCollection: false,
+        collectionType: 'New',
+        releaseDate: new Date().toISOString().split('T')[0]
     });
     const [imageFiles, setImageFiles] = useState([]);
 
@@ -43,6 +48,7 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
         };
     }, [dispatch]);
 
+    // Update the useEffect for product data
     useEffect(() => {
         if (product) {
             setFormData({
@@ -54,7 +60,11 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
                 images: product.images || [],
                 video: product.video || '',
                 keyFeatures: product.keyFeatures?.length ? product.keyFeatures : [{ feature: '' }],
-                faq: product.faq?.length ? product.faq : [{ question: '', answer: '' }]
+                faq: product.faq?.length ? product.faq : [{ question: '', answer: '' }],
+                isNewArrival: product.isNewArrival || false,
+                isInCollection: product.isInCollection || false,
+                collectionType: product.collectionType || 'New',
+                releaseDate: product.releaseDate ? new Date(product.releaseDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
             });
             setImageFiles([]);
         } else {
@@ -67,7 +77,11 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
                 images: [],
                 video: '',
                 keyFeatures: [{ feature: '' }],
-                faq: [{ question: '', answer: '' }]
+                faq: [{ question: '', answer: '' }],
+                isNewArrival: false,
+                isInCollection: false,
+                collectionType: 'New',
+                releaseDate: new Date().toISOString().split('T')[0]
             });
             setImageFiles([]);
         }
@@ -236,22 +250,44 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
                                 </div>
                             </div>
 
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="flex items-center space-x-2">
+                                    <input
+                                        type="checkbox"
+                                        id="isNewArrival"
+                                        name="isNewArrival"
+                                        checked={formData.isNewArrival}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, isNewArrival: e.target.checked }))}
+                                        className="h-4 w-4 text-black border-gray-300 rounded focus:ring-black"
+                                    />
+                                    <label htmlFor="isNewArrival" className="text-sm font-medium text-gray-700">New Arrival</label>
+                                </div>
+
+                                <div className="flex items-center space-x-2">
+                                    <input
+                                        type="checkbox"
+                                        id="isInCollection"
+                                        name="isInCollection"
+                                        checked={formData.isInCollection}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, isInCollection: e.target.checked }))}
+                                        className="h-4 w-4 text-black border-gray-300 rounded focus:ring-black"
+                                    />
+                                    <label htmlFor="isInCollection" className="text-sm font-medium text-gray-700">In Collection</label>
+                                </div>
+                            </div>
+
                             <div>
-                                <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
+                                <label htmlFor="collectionType" className="block text-sm font-medium text-gray-700">Collection Type</label>
                                 <select
-                                    id="category"
-                                    name="category"
-                                    value={formData.category}
+                                    id="collectionType"
+                                    name="collectionType"
+                                    value={formData.collectionType}
                                     onChange={handleChange}
-                                    required
                                     className="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-colors duration-200"
                                 >
-                                    <option value="">Select a category</option>
-                                    {categories.map((category) => (
-                                        <option key={category._id} value={category._id}>
-                                            {category.name}
-                                        </option>
-                                    ))}
+                                    <option value="New">New</option>
+                                    <option value="Limited">Limited</option>
+                                    <option value="Bestseller">Bestseller</option>
                                 </select>
                             </div>
 
@@ -337,6 +373,25 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+
+                            <div>
+                                <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
+                                <select
+                                    id="category"
+                                    name="category"
+                                    value={formData.category}
+                                    onChange={handleChange}
+                                    required
+                                    className="mt-2 block w-full border border-gray-300 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-colors duration-200"
+                                >
+                                    <option value="">Select a category</option>
+                                    {categories.map((category) => (
+                                        <option key={category._id} value={category._id}>
+                                            {category.name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div>

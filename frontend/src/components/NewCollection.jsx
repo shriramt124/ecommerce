@@ -1,6 +1,8 @@
 import { FiChevronLeft, FiChevronRight, FiArrowRight, FiShoppingBag, FiHeart } from 'react-icons/fi';
 import { useState, useRef } from 'react';
 
+
+
 const NewCollection = () => {
   const containerRef = useRef(null);
   const [hoveredIndex, setHoveredIndex] = useState(null);

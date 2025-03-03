@@ -259,17 +259,7 @@ export const resetPassword = async (req, res, next) => {
     }
 };
 
-
-//here roles will the array 
-export const allowedTo = (...roles) => {
-    return catchAsyncError(async (req, res, next) => {
-        if (!roles.includes(req.user.role)) {
-            return next(new AppError('you are not authorized to access this route', 401));
-        } else {
-            next();
-        }
-    })
-}
+ 
 
 // Check if user is logged in
 export const isLoggedIn = catchAsyncError(async (req, res, next) => {

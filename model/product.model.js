@@ -75,8 +75,24 @@ const productSchema = new Schema(
             min: [0, "Total reviews cannot be negative"]
         },
         video: {
+            type: String
+        },
+        isNewArrival: {
+            type: Boolean,
+            default: false
+        },
+        isInCollection: {
+            type: Boolean,
+            default: false
+        },
+        collectionType: {
             type: String,
-            trim: true
+            enum: ['New', 'Limited', 'Bestseller'],
+            default: 'New'
+        },
+        releaseDate: {
+            type: Date,
+            default: Date.now
         }
     },
     { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
