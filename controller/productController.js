@@ -17,10 +17,10 @@ export const createProduct = catchAsyncError(async (req, res, next) => {
         const uploadedImages = await Promise.all(uploadPromises);
         req.body.images = uploadedImages;
         req.body.slug = slugify(req.body.title);
-        console.log(req.body)
+        console.log(req.body ,"from req.body")
         // Extract and validate accordion sections, specifications, features, and new fields
-        const { accordionSections, specifications, features, keyFeatures, faq, video, ...otherData } = req.body;
-        
+        const { accordionSections, specifications, features, keyFeatures, faq, video, isInCollection, collectionType, releaseDate, ...otherData } = req.body;
+
         // Create the product with all fields
         const addProduct = new ProductModel({
             ...otherData,
@@ -30,22 +30,25 @@ export const createProduct = catchAsyncError(async (req, res, next) => {
             features: features ? JSON.parse(features) : [],
             keyFeatures: keyFeatures ? JSON.parse(keyFeatures) : [],
             faq: faq ? JSON.parse(faq) : [],
-            video: video || null
-        });
-        console.log(addProduct);
+            video: video || null,
+            isInCollection: isInCollection === true,
+            collectionType: collectionType || 'New',
+            releaseDate: releaseDate || Date.now()
+        })
+      //  console.log(addProduct);
 
-        await addProduct.save();
+            await addProduct.save();
 
-        // Cleanup temporary files
-        await Promise.all(req.files.map(file => fs.unlink(file.path)));
+            // Cleanup temporary files
+            await Promise.all(req.files.map(file => fs.unlink(file.path)));
 
-        res.status(201).json({ message: "success", addProduct });
-    } catch (error) {
-        // Cleanup temporary files in case of error
-        await Promise.all(req.files.map(file => fs.unlink(file.path).catch(() => { })));
-        return next(new AppError('Error uploading images: ' + error.message, 500));
-    }
-});
+            res.status(201).json({ message: "success", addProduct });
+        } catch (error) {
+            // Cleanup temporary files in case of error
+            await Promise.all(req.files.map(file => fs.unlink(file.path).catch(() => { })));
+            return next(new AppError('Error uploading images: ' + error.message, 500));
+        }
+    });
 
 export const getAllProducts = catchAsyncError(async (req, res, next) => {
     const {
@@ -107,11 +110,13 @@ export const getProductById = catchAsyncError(async (req, res, next) => {
 export const updateProduct = catchAsyncError(async (req, res, next) => {
     const productId = req.params.id;
     const product = await ProductModel.findById(productId);
+    //console.log(product)
 
     if (!product) {
         return next(new AppError("Product was not found", 404));
     }
-    const { accordionSections, specifications, features, keyFeatures, faq, video, ...otherData } = req.body;
+    const { accordionSections, specifications, features, keyFeatures, faq, video, isInCollection, collectionType, releaseDate, ...otherData } = req.body;
+    console.log(req.body)
     const updateData = {
         ...otherData,
         accordionSections: accordionSections ? JSON.parse(accordionSections) : undefined,
@@ -119,9 +124,12 @@ export const updateProduct = catchAsyncError(async (req, res, next) => {
         features: features ? JSON.parse(features) : undefined,
         keyFeatures: keyFeatures ? JSON.parse(keyFeatures) : undefined,
         faq: faq ? JSON.parse(faq) : undefined,
-        video: video || undefined
+        video: video || undefined,
+        isInCollection: isInCollection === 'true' ? true : false,
+        collectionType: collectionType || undefined,
+        releaseDate: releaseDate || undefined
     };
-    
+
     // Remove undefined fields
     Object.keys(updateData).forEach(key => {
         if (updateData[key] === undefined) {
@@ -138,7 +146,7 @@ export const updateProduct = catchAsyncError(async (req, res, next) => {
             // Upload new images to Cloudinary
             const uploadPromises = req.files.map(file => uploadToCloudinary(file));
             const uploadedImages = await Promise.all(uploadPromises);
-            
+
             // Combine existing images with new ones if no clear instruction to replace
             updateData.images = [...product.images, ...uploadedImages];
 
@@ -152,8 +160,8 @@ export const updateProduct = catchAsyncError(async (req, res, next) => {
     }
 
     const updatedProduct = await ProductModel.findByIdAndUpdate(
-        productId, 
-        updateData, 
+        productId,
+        updateData,
         { new: true }
     ).populate('category');
 

@@ -46,6 +46,7 @@ export const createProduct = createAsyncThunk('products/createProduct', async (p
 });
 
 export const updateProduct = createAsyncThunk('products/updateProduct', async ({ id, productData }) => {
+    console.log("rpocud data from ",productData)
     const response = await axios.put(`${API_URL}/${id}`, productData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true
