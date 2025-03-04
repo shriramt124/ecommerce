@@ -21,6 +21,7 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
         faq: [{ question: '', answer: '' }],
         isNewArrival: false,
         isInCollection: false,
+        isCarouselImage: false,
         collectionType: 'New',
         releaseDate: new Date().toISOString().split('T')[0]
     });
@@ -63,6 +64,7 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
                 faq: product.faq?.length ? product.faq : [{ question: '', answer: '' }],
                 isNewArrival: product.isNewArrival || false,
                 isInCollection: product.isInCollection || false,
+                isCarouselImage: product.isCarouselImage || false,
                 collectionType: product.collectionType || 'New',
                 releaseDate: product.releaseDate ? new Date(product.releaseDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
             });
@@ -155,6 +157,7 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
         productFormData.append('faq', JSON.stringify(formData.faq));
         productFormData.append('isNewArrival', formData.isNewArrival);
         productFormData.append('isInCollection', formData.isInCollection);
+        productFormData.append('isCarouselImage', formData.isCarouselImage);
         productFormData.append('collectionType', formData.collectionType);
         productFormData.append('releaseDate', formData.releaseDate);
 
@@ -278,6 +281,18 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
                                     />
                                     <label htmlFor="isInCollection" className="text-sm font-medium text-gray-700">In Collection</label>
                                 </div>
+                            </div>
+
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    id="isCarouselImage"
+                                    name="isCarouselImage"
+                                    checked={formData.isCarouselImage}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, isCarouselImage: e.target.checked }))}
+                                    className="h-4 w-4 text-black border-gray-300 rounded focus:ring-black"
+                                />
+                                <label htmlFor="isCarouselImage" className="text-sm font-medium text-gray-700">Show in Carousel</label>
                             </div>
 
                             <div>

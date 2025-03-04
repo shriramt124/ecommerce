@@ -1,35 +1,29 @@
 import { useState, useEffect, useRef } from 'react';
 import { FiChevronLeft, FiChevronRight, FiShoppingBag } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchProducts } from '../store/features/productSlice';
+import { Link } from 'react-router-dom';
 
 const Hero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-
-  const slides = [
-    {
-      image: 'https://images.unsplash.com/photo-1615634260167-c8cdede054de?q=80&w=2070&auto=format&fit=crop',
-      title: 'Luxury in Every Drive',
-      subtitle: 'Premium Car Fragrances',
-      description: 'Transform your journey with our signature scents',
-      cta: 'Shop Collection'
-    },
-    {
-      image: 'https://images.unsplash.com/photo-1557367184-663fba4b8b91?q=80&w=2070&auto=format&fit=crop',
-      title: 'Nature Meets Luxury',
-      subtitle: 'Organic Essences',
-      description: 'Crafted from the finest natural ingredients',
-      cta: 'Discover More'
-    },
-    {
-      image: 'https://images.unsplash.com/photo-1595425761107-5ed3c3c0c1f3?q=80&w=2070&auto=format&fit=crop',
-      title: 'Elegance Defined',
-      subtitle: 'Limited Edition Series',
-      description: 'Experience our most exclusive fragrances',
-      cta: 'View Collection'
-    }
-  ];
+  const dispatch = useDispatch();
+  const { items: products, loading } = useSelector((state) => state.products);
+  const filteredProducts = products.filter(product => product.isCarouselImage === true);
+  const slides = filteredProducts.map(product => ({
+    image: product.images[0],
+    title: product.title,
+    subtitle: product.category?.name || 'Premium Collection',
+    description: product.description,
+    cta: 'Shop Now',
+    productId: product._id
+  }));
 
   const parallaxRef = useRef(null);
+
+  useEffect(() => {
+    dispatch(fetchProducts());
+  }, [dispatch]);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -42,7 +36,7 @@ const Hero = () => {
   useEffect(() => {
     const timer = setInterval(nextSlide, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [slides.length]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -55,6 +49,18 @@ const Hero = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  if (loading) {
+    return (
+      <div className="relative h-screen w-full overflow-hidden bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+      </div>
+    );
+  }
+
+  if (slides.length === 0) {
+    return null;
+  }
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-black">
@@ -97,44 +103,48 @@ const Hero = () => {
               {slides[currentSlide].subtitle}
             </p>
             <p className="text-lg md:text-xl text-white/80 mb-8 italic">
-              {slides[currentSlide].description}
+              {(slides[currentSlide].description?.split(' ').slice(0, 200).join(' ') + (slides[currentSlide].description?.split(' ').length > 200 ? '...' : ''))}
             </p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-white text-black px-8 py-4 rounded-full font-medium text-lg flex items-center group"
-            >
-              {slides[currentSlide].cta}
-              <FiShoppingBag className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </motion.button>
+            <Link to={`/products/${slides[currentSlide].productId}`}>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-white text-black px-8 py-4 rounded-full font-medium text-lg flex items-center group"
+              >
+                {slides[currentSlide].cta}
+                <FiShoppingBag className="ml-2 group-hover:translate-x-1 transition-transform" />
+              </motion.button>
+            </Link>
           </motion.div>
         </div>
       </div>
 
-      {/* Navigation Arrows */}
-      <button
-        onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-white/30 hover:bg-white/50 transition-colors"
-      >
-        <FiChevronLeft className="w-6 h-6 text-white" />
-      </button>
-      <button
-        onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-white/30 hover:bg-white/50 transition-colors"
-      >
-        <FiChevronRight className="w-6 h-6 text-white" />
-      </button>
-
-      {/* Slide Indicators */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex space-x-2">
-        {slides.map((_, index) => (
+      {slides.length > 1 && (
+        <>
           <button
-            key={index}
-            onClick={() => setCurrentSlide(index)}
-            className={`w-2 h-2 rounded-full transition-colors ${index === currentSlide ? 'bg-white' : 'bg-white/50'}`}
-          />
-        ))}
-      </div>
+            onClick={prevSlide}
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-white/30 hover:bg-white/50 transition-colors"
+          >
+            <FiChevronLeft className="w-6 h-6 text-white" />
+          </button>
+          <button
+            onClick={nextSlide}
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-white/30 hover:bg-white/50 transition-colors"
+          >
+            <FiChevronRight className="w-6 h-6 text-white" />
+          </button>
+
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex space-x-2">
+            {slides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                className={`w-2 h-2 rounded-full transition-colors ${index === currentSlide ? 'bg-white' : 'bg-white/50'}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 };

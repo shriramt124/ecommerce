@@ -93,6 +93,10 @@ const productSchema = new Schema(
         releaseDate: {
             type: Date,
             default: Date.now
+        },
+        isCarouselImage: {
+            type: Boolean,
+            default: false
         }
     },
     { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }

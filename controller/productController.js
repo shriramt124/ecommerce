@@ -17,9 +17,9 @@ export const createProduct = catchAsyncError(async (req, res, next) => {
         const uploadedImages = await Promise.all(uploadPromises);
         req.body.images = uploadedImages;
         req.body.slug = slugify(req.body.title);
-        console.log(req.body ,"from req.body")
+        console.log(req.body, "from req.body")
         // Extract and validate accordion sections, specifications, features, and new fields
-        const { accordionSections, specifications, features, keyFeatures, faq, video, isInCollection, collectionType, releaseDate, ...otherData } = req.body;
+        const { accordionSections, specifications, features, keyFeatures, faq, video, isInCollection, collectionType, releaseDate, isCarouselImage, ...otherData } = req.body;
 
         // Create the product with all fields
         const addProduct = new ProductModel({
@@ -33,23 +33,24 @@ export const createProduct = catchAsyncError(async (req, res, next) => {
             video: video || null,
             isInCollection: isInCollection === 'true' || isInCollection === true,
             isNewArrival: req.body.isNewArrival === 'true' || req.body.isNewArrival === true,
+            isCarouselImage: isCarouselImage === 'true' || isCarouselImage === true,
             collectionType: collectionType || 'New',
             releaseDate: releaseDate || Date.now()
         })
-      //  console.log(addProduct);
+        //  console.log(addProduct);
 
-            await addProduct.save();
+        await addProduct.save();
 
-            // Cleanup temporary files
-            await Promise.all(req.files.map(file => fs.unlink(file.path)));
+        // Cleanup temporary files
+        await Promise.all(req.files.map(file => fs.unlink(file.path)));
 
-            res.status(201).json({ message: "success", addProduct });
-        } catch (error) {
-            // Cleanup temporary files in case of error
-            await Promise.all(req.files.map(file => fs.unlink(file.path).catch(() => { })));
-            return next(new AppError('Error uploading images: ' + error.message, 500));
-        }
-    });
+        res.status(201).json({ message: "success", addProduct });
+    } catch (error) {
+        // Cleanup temporary files in case of error
+        await Promise.all(req.files.map(file => fs.unlink(file.path).catch(() => { })));
+        return next(new AppError('Error uploading images: ' + error.message, 500));
+    }
+});
 
 export const getAllProducts = catchAsyncError(async (req, res, next) => {
     const {
@@ -116,7 +117,7 @@ export const updateProduct = catchAsyncError(async (req, res, next) => {
     if (!product) {
         return next(new AppError("Product was not found", 404));
     }
-    const { accordionSections, specifications, features, keyFeatures, faq, video, isInCollection, collectionType, releaseDate, ...otherData } = req.body;
+    const { accordionSections, specifications, features, keyFeatures, faq, video, isInCollection, collectionType, releaseDate, isCarouselImage, ...otherData } = req.body;
     console.log(req.body)
     const updateData = {
         ...otherData,
@@ -128,6 +129,7 @@ export const updateProduct = catchAsyncError(async (req, res, next) => {
         video: video || undefined,
         isInCollection: isInCollection === 'true' || isInCollection === true ? true : false,
         isNewArrival: req.body.isNewArrival === 'true' || req.body.isNewArrival === true ? true : false,
+        isCarouselImage: isCarouselImage === 'true' || isCarouselImage === true ? true : false,
         collectionType: collectionType || undefined,
         releaseDate: releaseDate || undefined
     };
