@@ -153,6 +153,10 @@ const ProductModal = ({ isOpen, onClose, product, onSubmit }) => {
         productFormData.append('video', formData.video);
         productFormData.append('keyFeatures', JSON.stringify(formData.keyFeatures));
         productFormData.append('faq', JSON.stringify(formData.faq));
+        productFormData.append('isNewArrival', formData.isNewArrival);
+        productFormData.append('isInCollection', formData.isInCollection);
+        productFormData.append('collectionType', formData.collectionType);
+        productFormData.append('releaseDate', formData.releaseDate);
 
         // Append image files
         imageFiles.forEach(file => {

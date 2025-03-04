@@ -31,7 +31,8 @@ export const createProduct = catchAsyncError(async (req, res, next) => {
             keyFeatures: keyFeatures ? JSON.parse(keyFeatures) : [],
             faq: faq ? JSON.parse(faq) : [],
             video: video || null,
-            isInCollection: isInCollection === true,
+            isInCollection: isInCollection === 'true' || isInCollection === true,
+            isNewArrival: req.body.isNewArrival === 'true' || req.body.isNewArrival === true,
             collectionType: collectionType || 'New',
             releaseDate: releaseDate || Date.now()
         })
@@ -125,7 +126,8 @@ export const updateProduct = catchAsyncError(async (req, res, next) => {
         keyFeatures: keyFeatures ? JSON.parse(keyFeatures) : undefined,
         faq: faq ? JSON.parse(faq) : undefined,
         video: video || undefined,
-        isInCollection: isInCollection === 'true' ? true : false,
+        isInCollection: isInCollection === 'true' || isInCollection === true ? true : false,
+        isNewArrival: req.body.isNewArrival === 'true' || req.body.isNewArrival === true ? true : false,
         collectionType: collectionType || undefined,
         releaseDate: releaseDate || undefined
     };
