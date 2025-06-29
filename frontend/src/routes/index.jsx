@@ -15,17 +15,14 @@ import Checkout from '../components/checkout/Checkout';
 import Profile from '../components/profile/Profile';
 import AboutUs from '../components/pages/AboutUs';
 import ContactUs from '../components/pages/ContactUs';
+import MyOrders from '../components/orders/MyOrders';
+import OrderDetails from '../components/orders/OrderDetails';
+import OrderTracking from '../components/orders/OrderTracking';
 
 const router = createBrowserRouter([
   {
     path: '/admin',
-    element: <AdminLayout />,
-    children: [
-      {
-        path: '',
-        element: <Dashboard />
-      }
-    ]
+    element: <AdminLayout />
   },
   {
     path: '/',
@@ -62,6 +59,18 @@ const router = createBrowserRouter([
       {
         path: 'contact',
         element: <ContactUs />,
+      },
+      {
+        path: 'my-orders',
+        element: <MyOrders />,
+      },
+      {
+        path: 'orders/:id',
+        element: <OrderDetails />,
+      },
+      {
+        path: 'orders/:id/track',
+        element: <OrderTracking />,
       },
     ],
   },

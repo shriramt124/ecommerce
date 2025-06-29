@@ -42,11 +42,11 @@ export const AuthProvider = ({ children }) => {
     checkAuthStatus();
   }, [checkAuthStatus]);
 
-  
 
- 
 
- 
+
+
+
 
   // Register user
   const register = useCallback(async (userData) => {
@@ -105,6 +105,17 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  // Update user profile data
+  const updateUserProfile = useCallback(async (userData) => {
+    try {
+      setUser(prevUser => ({ ...prevUser, ...userData }));
+      return true;
+    } catch (error) {
+      console.error('Failed to update user profile in context:', error);
+      return false;
+    }
+  }, []);
+
   const value = {
     user,
     loading,
@@ -115,6 +126,7 @@ export const AuthProvider = ({ children }) => {
     forgotPassword,
     resetPassword,
     checkAuthStatus,
+    updateUserProfile,
   };
 
   if (loading) return <div>Loading...</div>;

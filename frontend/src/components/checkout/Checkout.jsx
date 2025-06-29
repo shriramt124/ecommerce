@@ -74,11 +74,51 @@ const Checkout = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // TODO: Implement order creation logic
-      toast.success('Order placed successfully!');
-      navigate('/order-confirmation');
+      // Validate form data
+      if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone ||
+        !formData.address || !formData.city || !formData.state || !formData.pinCode || !formData.country) {
+        toast.error('Please fill in all required fields');
+        return;
+      }
+
+      // Prepare order data
+      const orderData = {
+        orderItems: cart.items.map(item => ({
+          product: item.id,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        shippingAddress: {
+          street: `${formData.address} ${formData.apartment || ''}`.trim(),
+          city: formData.city,
+          state: formData.state,
+          country: formData.country,
+          zipCode: formData.pinCode
+        },
+        paymentInfo: {
+          type: formData.paymentMethod === 'cod' ? 'COD' : 'CARD',
+          status: formData.paymentMethod === 'cod' ? 'PENDING' : 'COMPLETED'
+        },
+        itemsPrice: cart.subtotal,
+        taxPrice: cart.tax,
+        shippingPrice: cart.shipping
+      };
+
+      // Import the createOrder function from orderService
+      const { createOrder } = await import('../../services/orderService');
+
+      // Create the order
+      const response = await createOrder(orderData);
+
+      if (response.success) {
+        toast.success('Order placed successfully!');
+        navigate(`/orders/${response.order._id}`);
+      } else {
+        toast.error(response.message || 'Failed to place order');
+      }
     } catch (error) {
-      toast.error('Failed to place order. Please try again.');
+      console.error('Order creation error:', error);
+      toast.error(error.message || 'Failed to place order. Please try again.');
     }
   };
 

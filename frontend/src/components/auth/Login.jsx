@@ -7,8 +7,8 @@ import { useAuthHook } from '../../hooks/useAuthHook';
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    Email: '',
+    Password: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { handleLogin } = useAuthHook();
@@ -25,7 +25,7 @@ const Login = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await handleLogin(formData.email, formData.password);
+      await handleLogin(formData.Email, formData.Password);
       toast.success('Login successful!');
       navigate('/products');
     } catch (error) {
@@ -45,34 +45,34 @@ const Login = () => {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="Email" className="block text-sm font-medium text-gray-700 mb-1">
             Email
           </label>
           <input
-            id="email"
-            name="email"
-            type="email"
+            id="Email"
+            name="Email"
+            type="Email"
             required
-            value={formData.email}
+            value={formData.Email}
             onChange={handleChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-            placeholder="Enter your email"
+            placeholder="Enter your Email"
           />
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="Password" className="block text-sm font-medium text-gray-700 mb-1">
             Password
           </label>
           <input
-            id="password"
-            name="password"
-            type="password"
+            id="Password"
+            name="Password"
+            type="Password"
             required
-            value={formData.password}
+            value={formData.Password}
             onChange={handleChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-            placeholder="Enter your password"
+            placeholder="Enter your Password"
           />
         </div>
 
@@ -88,8 +88,8 @@ const Login = () => {
               Remember me
             </label>
           </div>
-          <Link to="/forgot-password" className="text-sm text-black hover:underline">
-            Forgot your password?
+          <Link to="/forgot-Password" className="text-sm text-black hover:underline">
+            Forgot your Password?
           </Link>
         </div>
 

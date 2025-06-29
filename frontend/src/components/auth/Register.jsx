@@ -7,11 +7,11 @@ import { useAuthHook } from '../../hooks/useAuthHook';
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
+    FirstName: '',
+    LastName: '',
+    Email: '',
     phoneNumber: '',
-    password: ''
+    Password: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { handleRegister } = useAuthHook();
@@ -48,15 +48,15 @@ const Register = () => {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="FirstName" className="block text-sm font-medium text-gray-700 mb-1">
               First Name
             </label>
             <input
-              id="firstName"
-              name="firstName"
+              id="FirstName"
+              name="FirstName"
               type="text"
               required
-              value={formData.firstName}
+              value={formData.FirstName}
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
               placeholder="Enter your first name"
@@ -64,15 +64,15 @@ const Register = () => {
           </div>
 
           <div>
-            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="LastName" className="block text-sm font-medium text-gray-700 mb-1">
               Last Name
             </label>
             <input
-              id="lastName"
-              name="lastName"
+              id="LastName"
+              name="LastName"
               type="text"
               required
-              value={formData.lastName}
+              value={formData.LastName}
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
               placeholder="Enter your last name"
@@ -81,18 +81,18 @@ const Register = () => {
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="Email" className="block text-sm font-medium text-gray-700 mb-1">
             Email
           </label>
           <input
-            id="email"
-            name="email"
-            type="email"
+            id="Email"
+            name="Email"
+            type="Email"
             required
-            value={formData.email}
+            value={formData.Email}
             onChange={handleChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-            placeholder="Enter your email"
+            placeholder="Enter your Email"
           />
         </div>
 
@@ -113,18 +113,18 @@ const Register = () => {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="Password" className="block text-sm font-medium text-gray-700 mb-1">
             Password
           </label>
           <input
-            id="password"
-            name="password"
-            type="password"
+            id="Password"
+            name="Password"
+            type="Password"
             required
-            value={formData.password}
+            value={formData.Password}
             onChange={handleChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-            placeholder="Create a password"
+            placeholder="Create a Password"
           />
         </div>
 

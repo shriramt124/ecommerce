@@ -68,6 +68,7 @@ export const registerUser = catchAsyncError(async (req, res, next) => {
 
 // Login User
 export const loginUser = catchAsyncError(async (req, res, next) => {
+    console.log(req.body, "got data in the login route from the backend")
     const { Email, Password } = req.body;
     console.log(Email, Password)
 
@@ -145,7 +146,7 @@ export const refreshToken = catchAsyncError(async (req, res, next) => {
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            maxAge: 1 * 60 * 1000 // 15 minutes
+            maxAge: 1 * 60 * 1000 //  minutes
         });
 
         res.json({
@@ -176,7 +177,7 @@ export const logoutUser = catchAsyncError(async (req, res, next) => {
         secure: process.env.NODE_ENV === 'production',
         expires: new Date(0)
     });
-    
+
     res.cookie('accessToken', '', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -259,7 +260,7 @@ export const resetPassword = async (req, res, next) => {
     }
 };
 
- 
+
 
 // Check if user is logged in
 export const isLoggedIn = catchAsyncError(async (req, res, next) => {

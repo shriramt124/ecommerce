@@ -5,6 +5,7 @@ import { fetchDashboardStats, fetchAllUsers } from '../../store/features/adminSl
 import UsersPanel from './UsersPanel';
 import ProductsPanel from './ProductsPanel';
 import CategoriesPanel from './CategoriesPanel';
+import OrdersPanel from './OrdersPanel';
 const Dashboard = () => {
     const dispatch = useDispatch();
     const { stats, loading, error } = useSelector((state) => state.admin);
@@ -42,6 +43,8 @@ const Dashboard = () => {
                 return <ProductsPanel />;
             case 'categories':
                 return <CategoriesPanel />;
+            case 'orders':
+                return <OrdersPanel />;
             default:
                 return (
                     <div className="container mx-auto">
@@ -178,7 +181,10 @@ const Dashboard = () => {
                             <FiPackage className="h-6 w-6" />
                             <span className="ml-3 hidden lg:inline-block">Products</span>
                         </button>
-                        <button className="flex-shrink-0 flex items-center justify-center md:justify-start w-12 h-12 md:w-full md:h-auto px-0 md:px-3 py-2 text-gray-600 hover:bg-black hover:text-white rounded-lg transition-all duration-200 group">
+                        <button
+                            onClick={() => setActiveTab('orders')}
+                            className={`flex-shrink-0 flex items-center justify-center md:justify-start w-12 h-12 md:w-full md:h-auto px-0 md:px-3 py-2 rounded-lg transition-all duration-200 group ${activeTab === 'orders' ? 'bg-black text-white' : 'text-gray-600 hover:bg-black hover:text-white'}`}
+                        >
                             <FiShoppingBag className="h-6 w-6" />
                             <span className="ml-3 hidden lg:inline-block">Orders</span>
                         </button>

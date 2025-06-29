@@ -1,12 +1,12 @@
-import { useState,useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
-import { toast } from 'react-hot-toast';
+import { toast } from 'react-toastify';
 import { FaUser } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
-    const { user, isAuthenticated } = useAuth();
+    const { user, isAuthenticated, updateUserProfile } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -15,7 +15,7 @@ const Profile = () => {
             return;
         }
     }, [isAuthenticated, navigate]);
-   
+
     const [formData, setFormData] = useState({
         FirstName: user?.FirstName || '',
         LastName: user?.LastName || '',
@@ -69,10 +69,13 @@ const Profile = () => {
             });
 
             if (response.data.success) {
+                // Update the user data in the auth context
+                await updateUserProfile(response.data.user);
                 toast.success('Profile updated successfully');
                 setIsEditing(false);
             }
         } catch (error) {
+            console.error('Profile update error:', error);
             toast.error(error.response?.data?.message || 'Failed to update profile');
         } finally {
             setLoading(false);

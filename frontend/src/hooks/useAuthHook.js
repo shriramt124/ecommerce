@@ -8,7 +8,8 @@ export const useAuthHook = () => {
     logout,
     forgotPassword,
     resetPassword,
-    isAuthenticated
+    isAuthenticated,
+    updateUserProfile
   } = useAuth();
 
   const handleRegister = async (userData) => {
